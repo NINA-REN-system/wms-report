@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>智聯雲倉｜現場問題回報</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F5F3EE;
+    --card: #FFFFFF;
+    --primary: #1A1A2E;
+    --accent: #E8501A;
+    --accent-light: #FFF0EB;
+    --text: #1A1A2E;
+    --text-sub: #6B6B6B;
+    --border: #E0DDD6;
+    --success: #1A7A4A;
+    --success-bg: #E8F5EE;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--primary);
+    color: white;
+    padding: 20px 20px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #4CAF50;
+    box-shadow: 0 0 6px #4CAF50;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .header h1 span { color: var(--accent); }
+
+  /* ── Main ── */
+  .main { padding: 20px 16px; max-width: 480px; margin: 0 auto; }
+
+  /* ── Section Card ── */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-sub);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-title::before {
+    content: '';
+    display: inline-block;
+    width: 3px; height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* ── Form Elements ── */
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-sub);
+    margin-bottom: 6px;
+  }
+  .required::after { content: ' *'; color: var(--accent); }
+
+  select, textarea, input[type="text"] {
+    width: 100%;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    appearance: none;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  select:focus, textarea:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+    background: white;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B6B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  textarea { resize: none; line-height: 1.6; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+
+  /* ── Tag Grid（問題性質 / 緊急度） ── */
+  .tag-grid {
+    display: grid;
+    gap: 8px;
+  }
+  .tag-grid-2 { grid-template-columns: 1fr 1fr; }
+  .tag-grid-4 { grid-template-columns: 1fr 1fr; }
+
+  .tag-btn {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 11px 10px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-sub);
+    background: var(--bg);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    line-height: 1.3;
+  }
+  .tag-btn:active { transform: scale(0.97); }
+  .tag-btn.selected {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+  .tag-btn .tag-icon { display: block; font-size: 18px; margin-bottom: 3px; }
+
+  /* ── 緊急度特殊 ── */
+  .tag-btn.urgent.selected {
+    border-color: #CC2200;
+    background: #FFF0EB;
+    color: #CC2200;
+  }
+  .tag-btn.normal.selected {
+    border-color: #1A7A4A;
+    background: #E8F5EE;
+    color: #1A7A4A;
+  }
+
+  /* ── 附件上傳 ── */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg);
+    position: relative;
+  }
+  .upload-zone:active { border-color: var(--accent); background: var(--accent-light); }
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+  .upload-text { font-size: 13px; color: var(--text-sub); line-height: 1.5; }
+  .upload-text strong { color: var(--accent); font-weight: 600; }
+
+  /* ── 附件預覽 ── */
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--border);
+  }
+  .preview-item img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .preview-item .preview-label {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: white; font-weight: 600;
+    background: rgba(0,0,0,0.5);
+    text-align: center; padding: 4px;
+  }
+  .preview-item .remove-btn {
+    position: absolute; top: 4px; right: 4px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    color: white; border: none;
+    font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+
+  /* ── Notion Token 設定 ── */
+  .settings-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; color: var(--text-sub);
+    cursor: pointer; padding: 4px 0;
+  }
+  .settings-toggle svg { transition: transform 0.2s; }
+  .settings-toggle.open svg { transform: rotate(180deg); }
+  .settings-content { margin-top: 12px; display: none; }
+  .settings-content.show { display: block; }
+  .hint { font-size: 11px; color: var(--text-sub); margin-top: 6px; line-height: 1.5; }
+  .hint a { color: var(--accent); text-decoration: none; }
+
+  /* ── 送出按鈕 ── */
+  .submit-btn {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 18px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 8px;
+  }
+  .submit-btn:active { transform: scale(0.98); opacity: 0.9; }
+  .submit-btn:disabled { background: var(--border); color: var(--text-sub); cursor: not-allowed; transform: none; }
+
+  /* ── 成功畫面 ── */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 48px 24px;
+  }
+  .success-screen.show { display: block; }
+  .success-icon {
+    width: 72px; height: 72px;
+    background: var(--success-bg);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 32px;
+  }
+  .success-screen h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .success-screen p { font-size: 14px; color: var(--text-sub); line-height: 1.6; margin-bottom: 24px; }
+  .reset-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 32px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ── Loading overlay ── */
+  .loading-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,26,46,0.6);
+    z-index: 200;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+  }
+  .loading-overlay.show { display: flex; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid rgba(255,255,255,0.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: white; font-size: 14px; font-weight: 500; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--primary); color: white;
+    padding: 12px 20px; border-radius: 100px;
+    font-size: 13px; font-weight: 500;
+    transition: transform 0.3s ease;
+    z-index: 300; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { background: #CC2200; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <span class="logo">智互聯產品中心</span>
+    <div class="status-dot"></div>
+  </div>
+  <h1>智聯雲倉<span>｜</span>現場回報</h1>
+</div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">回報中，請稍候...</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- 成功畫面 -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✓</div>
+    <h2>回報成功！</h2>
+    <p>問題已記錄至 Notion 客戶現場問題庫<br>顧問主管將會收到通知</p>
+    <button class="reset-btn" onclick="resetForm()">繼續回報下一個問題</button>
+  </div>
+
+  <!-- 表單 -->
+  <div id="formArea">
+
+    <!-- ① 顧問資訊 -->
+    <div class="card">
+      <div class="card-title">顧問資訊</div>
+
+      <div class="field">
+        <label class="required">顧問姓名</label>
+        <select id="consultant">
+          <option value="">請選擇顧問</option>
+          <!-- ✏️ 新增顧問：在下方複製一行並修改姓名 -->
+          <option value="REX">REX</option>
+          <option value="俊榮">俊榮</option>
+          <option value="美月">美月</option>
+          <option value="兆惠">兆惠</option>
+          <option value="冠妡">冠妡</option>
+          <option value="怡人">怡人</option>
+          <option value="咏真">咏真</option>
+          <!-- 新增顧問範例：<option value="新顧問姓名">新顧問姓名</option> -->
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="required">客戶名稱</label>
+        <select id="client">
+          <option value="">請選擇客戶</option>
+          <!-- ✏️ 新增客戶：在下方複製一行並修改名稱 -->
+          <option value="東元">東元</option>
+          <option value="泰碩">泰碩</option>
+          <option value="永勝">永勝</option>
+          <option value="信音">信音</option>
+          <!-- 新增客戶範例：<option value="新客戶名稱">新客戶名稱</option> -->
+        </select>
+      </div>
+    </div>
+
+    <!-- ② 問題描述 -->
+    <div class="card">
+      <div class="card-title">問題描述</div>
+
+      <div class="field">
+        <label class="required">問題摘要</label>
+        <input type="text" id="title" placeholder="一句話描述問題，例如：掃碼收貨無法提交">
+      </div>
+
+      <div class="field">
+        <label class="required">問題性質</label>
+        <div class="tag-grid tag-grid-4">
+          <button class="tag-btn" data-group="nature" data-value="系統BUG" onclick="selectTag(this)">
+            <span class="tag-icon">🐛</span>系統 BUG
+          </button>
+          <button class="tag-btn" data-group="nature" data-value="操作錯誤" onclick="selectTag(this)">
+            <span class="tag-icon">👆</span>操作錯誤
+          </button>
+          <button class="tag-btn" data-group="nature" data-value="功能缺口" onclick="selectTag(this)">
+            <span class="tag-icon">🔧</span>功能缺口
+          </button>
+          <button class="tag-btn" data-group="nature" data-value="環境設定" onclick="selectTag(this)">
+            <span class="tag-icon">⚙️</span>環境設定
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>問題模組</label>
+        <select id="module">
+          <option value="">請選擇模組（可不填）</option>
+          <option value="收貨">收貨</option>
+          <option value="上架">上架</option>
+          <option value="下架">下架</option>
+          <option value="揀貨">揀貨</option>
+          <option value="標籤列印">標籤列印</option>
+          <option value="基礎設定">基礎設定</option>
+          <option value="庫存管理">庫存管理</option>
+          <option value="報表">報表</option>
+          <option value="ERP串接">ERP串接</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>現場詳細描述</label>
+        <textarea id="description" rows="4" placeholder="詳細說明問題發生的步驟與情境，越詳細越容易追蹤..."></textarea>
+      </div>
+    </div>
+
+    <!-- ③ 緊急度 -->
+    <div class="card">
+      <div class="card-title">緊急程度</div>
+      <div class="tag-grid tag-grid-2">
+        <button class="tag-btn urgent" data-group="urgent" data-value="緊急" onclick="selectTag(this)">
+          <span class="tag-icon">🚨</span>緊急<br><small style="font-weight:400;font-size:11px">影響正常作業</small>
+        </button>
+        <button class="tag-btn normal" data-group="urgent" data-value="普通" onclick="selectTag(this)">
+          <span class="tag-icon">📋</span>普通<br><small style="font-weight:400;font-size:11px">不影響作業</small>
+        </button>
+      </div>
+    </div>
+
+    <!-- ④ 附件上傳 -->
+    <div class="card">
+      <div class="card-title">附件（截圖／錄影）</div>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" accept="image/*,video/*" multiple onchange="handleFiles(this.files)">
+        <span class="upload-icon">📎</span>
+        <div class="upload-text">
+          點此上傳截圖或錄影<br>
+          <strong>支援 JPG、PNG、MP4、MOV</strong>
+        </div>
+      </div>
+      <div class="preview-grid" id="previewGrid"></div>
+    </div>
+
+    <!-- ⑤ Notion 設定 -->
+    <div class="card">
+      <div class="settings-toggle" id="settingsToggle" onclick="toggleSettings()">
+        <span>⚙️ Notion 連線設定</span>
+        <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+          <path d="M1 1l5 5 5-5" stroke="#6B6B6B" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="settings-content" id="settingsContent">
+        <div class="field" style="margin-top:12px">
+          <label>Notion API Token</label>
+          <input type="text" id="notionToken" placeholder="secret_xxxxxxxxxxxxxxxx">
+          <p class="hint">前往 <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a> 取得 Token，填入後會自動記憶在此裝置</p>
+        </div>
+        <div class="field">
+          <label>客戶現場問題庫 Database ID</label>
+          <input type="text" id="databaseId" placeholder="32碼的資料庫 ID">
+          <p class="hint">從 Notion 資料庫網址的 ?v= 前方複製</p>
+        </div>
+        <button onclick="saveSettings()" style="background:var(--primary);color:white;border:none;border-radius:8px;padding:10px 20px;font-family:'Noto Sans TC',sans-serif;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px;">儲存設定</button>
+      </div>
+    </div>
+
+    <!-- 送出 -->
+    <button class="submit-btn" id="submitBtn" onclick="submitReport()">
+      <span>📤</span> 送出問題回報
+    </button>
+
+  </div><!-- /formArea -->
+</div><!-- /main -->
+
+<script>
+  // ── 設定值 ──────────────────────────────────────
+  const SELECTED = {};
+  let attachedFiles = [];
+
+  // ── 載入儲存的設定 ──────────────────────────────
+  window.addEventListener('load', () => {
+    const token = localStorage.getItem('notionToken') || '';
+    const dbId  = localStorage.getItem('databaseId') || '';
+    if (token) document.getElementById('notionToken').value = token;
+    if (dbId)  document.getElementById('databaseId').value = dbId;
+  });
+
+  function saveSettings() {
+    const token = document.getElementById('notionToken').value.trim();
+    const dbId  = document.getElementById('databaseId').value.trim();
+    localStorage.setItem('notionToken', token);
+    localStorage.setItem('databaseId', dbId);
+    showToast('設定已儲存 ✓');
+  }
+
+  function toggleSettings() {
+    const toggle  = document.getElementById('settingsToggle');
+    const content = document.getElementById('settingsContent');
+    toggle.classList.toggle('open');
+    content.classList.toggle('show');
+  }
+
+  // ── Tag 選擇 ─────────────────────────────────────
+  function selectTag(btn) {
+    const group = btn.dataset.group;
+    document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    SELECTED[group] = btn.dataset.value;
+  }
+
+  // ── 附件處理 ─────────────────────────────────────
+  function handleFiles(files) {
+    Array.from(files).forEach(file => {
+      if (attachedFiles.length >= 6) { showToast('最多上傳 6 個附件', true); return; }
+      attachedFiles.push(file);
+      renderPreview(file, attachedFiles.length - 1);
+    });
+  }
+
+  function renderPreview(file, idx) {
+    const grid = document.getElementById('previewGrid');
+    const item = document.createElement('div');
+    item.className = 'preview-item';
+    item.id = `preview-${idx}`;
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        item.innerHTML = `<img src="${e.target.result}" alt="附件">
+          <button class="remove-btn" onclick="removeFile(${idx})">✕</button>`;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      item.innerHTML = `<div class="preview-label">🎬<br>${file.name.slice(0,12)}...</div>
+        <button class="remove-btn" onclick="removeFile(${idx})">✕</button>`;
+    }
+    grid.appendChild(item);
+  }
+
+  function removeFile(idx) {
+    attachedFiles[idx] = null;
+    const el = document.getElementById(`preview-${idx}`);
+    if (el) el.remove();
+  }
+
+  // ── 驗證 ─────────────────────────────────────────
+  function validate() {
+    if (!document.getElementById('consultant').value) { showToast('請選擇顧問姓名', true); return false; }
+    if (!document.getElementById('client').value)     { showToast('請選擇客戶名稱', true); return false; }
+    if (!document.getElementById('title').value.trim()) { showToast('請填寫問題摘要', true); return false; }
+    if (!SELECTED['nature']) { showToast('請選擇問題性質', true); return false; }
+    if (!SELECTED['urgent']) { showToast('請選擇緊急程度', true); return false; }
+    return true;
+  }
+
+  // ── 取得今天日期 ─────────────────────────────────
+  function today() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  // ── 送出 ─────────────────────────────────────────
+  async function submitReport() {
+    if (!validate()) return;
+
+    const token  = localStorage.getItem('notionToken') || document.getElementById('notionToken').value.trim();
+    const dbId   = localStorage.getItem('databaseId') || document.getElementById('databaseId').value.trim();
+
+    if (!token || !dbId) {
+      showToast('請先填寫 Notion Token 和 Database ID', true);
+      document.getElementById('settingsToggle').classList.add('open');
+      document.getElementById('settingsContent').classList.add('show');
+      return;
+    }
+
+    showLoading(true);
+
+    // 組合附件清單文字（圖片/影片無法直接上傳至 Notion API，記錄檔名供後續處理）
+    const fileNames = attachedFiles.filter(Boolean).map(f => f.name).join('、');
+
+    const payload = {
+      parent: { database_id: dbId },
+      properties: {
+        "問題描述": {
+          title: [{ text: { content: document.getElementById('title').value.trim() } }]
+        },
+        "客戶名稱": {
+          select: { name: document.getElementById('client').value }
+        },
+        "發生日期": {
+          date: { start: today() }
+        },
+        "問題性質": {
+          select: { name: SELECTED['nature'] }
+        },
+        "緊急度": {
+          select: { name: SELECTED['urgent'] }
+        },
+        "負責顧問": {
+          rich_text: [{ text: { content: document.getElementById('consultant').value } }]
+        },
+        "處理狀態": {
+          select: { name: "待確認" }
+        },
+        ...(document.getElementById('module').value && {
+          "問題模組": {
+            select: { name: document.getElementById('module').value }
+          }
+        }),
+        ...(document.getElementById('description').value.trim() && {
+          "現場描述": {
+            rich_text: [{ text: { content: document.getElementById('description').value.trim() } }]
+          }
+        }),
+        ...(fileNames && {
+          "附件清單": {
+            rich_text: [{ text: { content: fileNames } }]
+          }
+        }),
+        "回報方式": {
+          select: { name: "現場發現" }
+        }
+      }
+    };
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `你是一個 Notion API 代理。使用者會傳給你一個 Notion payload 和 token，請呼叫 Notion API 建立頁面並回傳結果。
+Token: ${token}
+請呼叫 POST https://api.notion.com/v1/pages，header 加上 Authorization: Bearer ${token} 和 Notion-Version: 2022-06-28，body 使用使用者傳來的 payload。
+回傳格式：{"success": true, "id": "頁面ID"} 或 {"success": false, "error": "錯誤訊息"}`,
+          messages: [{ role: 'user', content: JSON.stringify(payload) }]
+        })
+      });
+
+      // 改為直接呼叫 Notion API
+      const notionRes = await fetch('https://api.notion.com/v1/pages', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Notion-Version': '2022-06-28'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (notionRes.ok) {
+        showLoading(false);
+        showSuccess();
+      } else {
+        const err = await notionRes.json();
+        showLoading(false);
+        showToast(`送出失敗：${err.message || '請確認 Token 和 Database ID'}`, true);
+      }
+    } catch (e) {
+      // 直接呼叫 Notion API（CORS 限制下的備用方式）
+      try {
+        const notionRes = await fetch('https://api.notion.com/v1/pages', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Notion-Version': '2022-06-28'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        showLoading(false);
+        if (notionRes.ok) {
+          showSuccess();
+        } else {
+          const err = await notionRes.json();
+          showToast(`送出失敗：${err.message || '請確認設定'}`, true);
+        }
+      } catch (e2) {
+        showLoading(false);
+        showToast('網路錯誤，請確認網路連線', true);
+      }
+    }
+  }
+
+  // ── UI 工具函式 ──────────────────────────────────
+  function showLoading(show) {
+    document.getElementById('loadingOverlay').classList.toggle('show', show);
+    document.getElementById('submitBtn').disabled = show;
+  }
+
+  function showSuccess() {
+    document.getElementById('formArea').style.display = 'none';
+    document.getElementById('successScreen').classList.add('show');
+    window.scrollTo(0, 0);
+  }
+
+  function resetForm() {
+    document.getElementById('successScreen').classList.remove('show');
+    document.getElementById('formArea').style.display = 'block';
+    document.getElementById('consultant').value = '';
+    document.getElementById('client').value = '';
+    document.getElementById('title').value = '';
+    document.getElementById('module').value = '';
+    document.getElementById('description').value = '';
+    document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
+    Object.keys(SELECTED).forEach(k => delete SELECTED[k]);
+    attachedFiles = [];
+    document.getElementById('previewGrid').innerHTML = '';
+    document.getElementById('submitBtn').disabled = false;
+    window.scrollTo(0, 0);
+  }
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>

@@ -236,18 +236,22 @@
     line-height: 1;
   }
 
-  /* ── Notion Token 設定 ── */
-  .settings-toggle {
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 13px; color: var(--text-sub);
-    cursor: pointer; padding: 4px 0;
+  /* ── 流程說明 badge ── */
+  .flow-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-light);
+    border: 1px solid #F4C4B3;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    line-height: 1.5;
   }
-  .settings-toggle svg { transition: transform 0.2s; }
-  .settings-toggle.open svg { transform: rotate(180deg); }
-  .settings-content { margin-top: 12px; display: none; }
-  .settings-content.show { display: block; }
-  .hint { font-size: 11px; color: var(--text-sub); margin-top: 6px; line-height: 1.5; }
-  .hint a { color: var(--accent); text-decoration: none; }
+  .flow-badge .flow-icon { font-size: 16px; flex-shrink: 0; }
 
   /* ── 送出按鈕 ── */
   .submit-btn {
@@ -358,7 +362,7 @@
   <div class="success-screen" id="successScreen">
     <div class="success-icon">✓</div>
     <h2>回報成功！</h2>
-    <p>問題已記錄至 Notion 客戶現場問題庫<br>顧問主管將會收到通知</p>
+    <p>問題已記錄至 Google 表單<br>系統將自動同步至 Notion 客戶現場問題庫<br>顧問主管將會收到通知</p>
     <button class="reset-btn" onclick="resetForm()">繼續回報下一個問題</button>
   </div>
 
@@ -376,6 +380,7 @@
           <!-- ✏️ 新增顧問：在下方複製一行並修改姓名 -->
           <option value="REX">REX</option>
           <option value="俊榮">俊榮</option>
+          <option value="美倫姐">美倫姐</option>
           <option value="美月">美月</option>
           <option value="兆惠">兆惠</option>
           <option value="冠妡">冠妡</option>
@@ -390,10 +395,9 @@
         <select id="client">
           <option value="">請選擇客戶</option>
           <!-- ✏️ 新增客戶：在下方複製一行並修改名稱 -->
-          <option value="東元">東元</option>
-          <option value="泰碩">泰碩</option>
           <option value="永勝">永勝</option>
-          <option value="信音">信音</option>
+          <option value="泰碩">泰碩</option>
+          <option value="東元">東元</option>
           <!-- 新增客戶範例：<option value="新客戶名稱">新客戶名稱</option> -->
         </select>
       </div>
@@ -453,10 +457,10 @@
     <div class="card">
       <div class="card-title">緊急程度</div>
       <div class="tag-grid tag-grid-2">
-        <button class="tag-btn urgent" data-group="urgent" data-value="緊急" onclick="selectTag(this)">
+        <button class="tag-btn urgent" data-group="urgent" data-value="緊急(影響正常作業)" onclick="selectTag(this)">
           <span class="tag-icon">🚨</span>緊急<br><small style="font-weight:400;font-size:11px">影響正常作業</small>
         </button>
-        <button class="tag-btn normal" data-group="urgent" data-value="普通" onclick="selectTag(this)">
+        <button class="tag-btn normal" data-group="urgent" data-value="普通(不影響作業)" onclick="selectTag(this)">
           <span class="tag-icon">📋</span>普通<br><small style="font-weight:400;font-size:11px">不影響作業</small>
         </button>
       </div>
@@ -476,27 +480,10 @@
       <div class="preview-grid" id="previewGrid"></div>
     </div>
 
-    <!-- ⑤ Notion 設定 -->
-    <div class="card">
-      <div class="settings-toggle" id="settingsToggle" onclick="toggleSettings()">
-        <span>⚙️ Notion 連線設定</span>
-        <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-          <path d="M1 1l5 5 5-5" stroke="#6B6B6B" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="settings-content" id="settingsContent">
-        <div class="field" style="margin-top:12px">
-          <label>Notion API Token</label>
-          <input type="text" id="notionToken" placeholder="secret_xxxxxxxxxxxxxxxx">
-          <p class="hint">前往 <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a> 取得 Token，填入後會自動記憶在此裝置</p>
-        </div>
-        <div class="field">
-          <label>客戶現場問題庫 Database ID</label>
-          <input type="text" id="databaseId" placeholder="32碼的資料庫 ID">
-          <p class="hint">從 Notion 資料庫網址的 ?v= 前方複製</p>
-        </div>
-        <button onclick="saveSettings()" style="background:var(--primary);color:white;border:none;border-radius:8px;padding:10px 20px;font-family:'Noto Sans TC',sans-serif;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px;">儲存設定</button>
-      </div>
+    <!-- 送出流程說明 -->
+    <div class="flow-badge">
+      <span class="flow-icon">🔄</span>
+      <span>送出後將寫入 Google 表單，系統自動透過 Make 同步至 Notion 現場問題庫</span>
     </div>
 
     <!-- 送出 -->
@@ -508,42 +495,28 @@
 </div><!-- /main -->
 
 <script>
-  // ── 設定值 ──────────────────────────────────────
+  // Apps Script 網址（資料會直接寫入 Google 試算表）
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxgEtAj7ifD32k9sjY23TuebgQj0WjoF4kUGQJB_WVLgSAcOsOSzay4rKgAWBQsdMyNow/exec';
+  const FORM_ENTRY = {
+    consultant:  'entry.68723739',
+    client:      'entry.1844282848',
+    title:       'entry.502654430',
+    nature:      'entry.1978639996',
+    module:      'entry.416608529',
+    description: 'entry.362949306',
+    urgent:      'entry.287268780',
+  };
+
   const SELECTED = {};
   let attachedFiles = [];
 
-  // ── 載入儲存的設定 ──────────────────────────────
-  window.addEventListener('load', () => {
-    const token = localStorage.getItem('notionToken') || '';
-    const dbId  = localStorage.getItem('databaseId') || '';
-    if (token) document.getElementById('notionToken').value = token;
-    if (dbId)  document.getElementById('databaseId').value = dbId;
-  });
-
-  function saveSettings() {
-    const token = document.getElementById('notionToken').value.trim();
-    const dbId  = document.getElementById('databaseId').value.trim();
-    localStorage.setItem('notionToken', token);
-    localStorage.setItem('databaseId', dbId);
-    showToast('設定已儲存 ✓');
-  }
-
-  function toggleSettings() {
-    const toggle  = document.getElementById('settingsToggle');
-    const content = document.getElementById('settingsContent');
-    toggle.classList.toggle('open');
-    content.classList.toggle('show');
-  }
-
-  // ── Tag 選擇 ─────────────────────────────────────
   function selectTag(btn) {
     const group = btn.dataset.group;
-    document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('[data-group="' + group + '"]').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     SELECTED[group] = btn.dataset.value;
   }
 
-  // ── 附件處理 ─────────────────────────────────────
   function handleFiles(files) {
     Array.from(files).forEach(file => {
       if (attachedFiles.length >= 6) { showToast('最多上傳 6 個附件', true); return; }
@@ -556,29 +529,25 @@
     const grid = document.getElementById('previewGrid');
     const item = document.createElement('div');
     item.className = 'preview-item';
-    item.id = `preview-${idx}`;
-
+    item.id = 'preview-' + idx;
     if (file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = e => {
-        item.innerHTML = `<img src="${e.target.result}" alt="附件">
-          <button class="remove-btn" onclick="removeFile(${idx})">✕</button>`;
+        item.innerHTML = '<img src="' + e.target.result + '" alt=""><button class="remove-btn" onclick="removeFile(' + idx + ')">x</button>';
       };
       reader.readAsDataURL(file);
     } else {
-      item.innerHTML = `<div class="preview-label">🎬<br>${file.name.slice(0,12)}...</div>
-        <button class="remove-btn" onclick="removeFile(${idx})">✕</button>`;
+      item.innerHTML = '<div class="preview-label">file<br>' + file.name.slice(0,12) + '</div><button class="remove-btn" onclick="removeFile(' + idx + ')">x</button>';
     }
     grid.appendChild(item);
   }
 
   function removeFile(idx) {
     attachedFiles[idx] = null;
-    const el = document.getElementById(`preview-${idx}`);
+    const el = document.getElementById('preview-' + idx);
     if (el) el.remove();
   }
 
-  // ── 驗證 ─────────────────────────────────────────
   function validate() {
     if (!document.getElementById('consultant').value) { showToast('請選擇顧問姓名', true); return false; }
     if (!document.getElementById('client').value)     { showToast('請選擇客戶名稱', true); return false; }
@@ -588,137 +557,92 @@
     return true;
   }
 
-  // ── 取得今天日期 ─────────────────────────────────
   function today() {
-    return new Date().toISOString().split('T')[0];
+    return new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
   }
 
-  // ── 送出 ─────────────────────────────────────────
   async function submitReport() {
     if (!validate()) return;
-
-    const token  = localStorage.getItem('notionToken') || document.getElementById('notionToken').value.trim();
-    const dbId   = localStorage.getItem('databaseId') || document.getElementById('databaseId').value.trim();
-
-    if (!token || !dbId) {
-      showToast('請先填寫 Notion Token 和 Database ID', true);
-      document.getElementById('settingsToggle').classList.add('open');
-      document.getElementById('settingsContent').classList.add('show');
-      return;
-    }
-
     showLoading(true);
-
-    // 組合附件清單文字（圖片/影片無法直接上傳至 Notion API，記錄檔名供後續處理）
     const fileNames = attachedFiles.filter(Boolean).map(f => f.name).join('、');
+    const baseDesc  = document.getElementById('description').value.trim();
+    const parts = [baseDesc];
+    if (fileNames) parts.push('【附件】' + fileNames);
+    parts.push('【回報日期】' + today());
+    const fullDesc = parts.filter(Boolean).join('\n');
 
-    const payload = {
-      parent: { database_id: dbId },
-      properties: {
-        "問題描述": {
-          title: [{ text: { content: document.getElementById('title').value.trim() } }]
-        },
-        "客戶名稱": {
-          select: { name: document.getElementById('client').value }
-        },
-        "發生日期": {
-          date: { start: today() }
-        },
-        "問題性質": {
-          select: { name: SELECTED['nature'] }
-        },
-        "緊急度": {
-          select: { name: SELECTED['urgent'] }
-        },
-        "負責顧問": {
-          rich_text: [{ text: { content: document.getElementById('consultant').value } }]
-        },
-        "處理狀態": {
-          select: { name: "待確認" }
-        },
-        ...(document.getElementById('module').value && {
-          "問題模組": {
-            select: { name: document.getElementById('module').value }
-          }
-        }),
-        ...(document.getElementById('description').value.trim() && {
-          "現場描述": {
-            rich_text: [{ text: { content: document.getElementById('description').value.trim() } }]
-          }
-        }),
-        ...(fileNames && {
-          "附件清單": {
-            rich_text: [{ text: { content: fileNames } }]
-          }
-        }),
-        "回報方式": {
-          select: { name: "現場發現" }
+    // 附件壓縮到 400px / 50% 品質，確保 base64 夠小
+    const validFiles = attachedFiles.filter(Boolean);
+    const fileDataList = await Promise.all(validFiles.map(file => {
+      return new Promise((resolve) => {
+        if (file.type.startsWith('image/')) {
+          const img = new Image();
+          const url = URL.createObjectURL(file);
+          img.onload = () => {
+            const MAX = 400;
+            let w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+              if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+              else       { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            const base64 = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
+            URL.revokeObjectURL(url);
+            resolve({ name: file.name + '.jpg', type: 'image/jpeg', base64 });
+          };
+          img.src = url;
+        } else {
+          resolve({ name: file.name, type: file.type, base64: '' }); // 非圖片略過
         }
-      }
-    };
+      });
+    }));
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: `你是一個 Notion API 代理。使用者會傳給你一個 Notion payload 和 token，請呼叫 Notion API 建立頁面並回傳結果。
-Token: ${token}
-請呼叫 POST https://api.notion.com/v1/pages，header 加上 Authorization: Bearer ${token} 和 Notion-Version: 2022-06-28，body 使用使用者傳來的 payload。
-回傳格式：{"success": true, "id": "頁面ID"} 或 {"success": false, "error": "錯誤訊息"}`,
-          messages: [{ role: 'user', content: JSON.stringify(payload) }]
-        })
-      });
+      // ── 送出文字資料 ──
+      const textParams = new URLSearchParams();
+      textParams.set('consultant',  document.getElementById('consultant').value);
+      textParams.set('client',      document.getElementById('client').value);
+      textParams.set('title',       document.getElementById('title').value.trim());
+      textParams.set('nature',      SELECTED['nature'] || '');
+      textParams.set('module',      document.getElementById('module').value || '');
+      textParams.set('description', fullDesc);
+      textParams.set('urgent',      SELECTED['urgent'] || '');
+      textParams.set('fileCount',   '0');
 
-      // 改為直接呼叫 Notion API
-      const notionRes = await fetch('https://api.notion.com/v1/pages', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Notion-Version': '2022-06-28'
-        },
-        body: JSON.stringify(payload)
+      await fetch(APPS_SCRIPT_URL + '?' + textParams.toString(), {
+        method: 'GET', mode: 'no-cors'
       });
+      await new Promise(r => setTimeout(r, 1000));
 
-      if (notionRes.ok) {
-        showLoading(false);
-        showSuccess();
-      } else {
-        const err = await notionRes.json();
-        showLoading(false);
-        showToast(`送出失敗：${err.message || '請確認 Token 和 Database ID'}`, true);
-      }
-    } catch (e) {
-      // 直接呼叫 Notion API（CORS 限制下的備用方式）
-      try {
-        const notionRes = await fetch('https://api.notion.com/v1/pages', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Notion-Version': '2022-06-28'
-          },
-          body: JSON.stringify(payload)
+      // ── 逐張送出附件 ──
+      for (let i = 0; i < fileDataList.length; i++) {
+        const f = fileDataList[i];
+        if (!f.base64) continue;
+        const fileParams = new URLSearchParams();
+        fileParams.set('appendFileOnly', 'true');
+        fileParams.set('consultant',     document.getElementById('consultant').value);
+        fileParams.set('client',         document.getElementById('client').value);
+        fileParams.set('fileCount',      '1');
+        fileParams.set('file_name_0',    f.name);
+        fileParams.set('file_type_0',    f.type);
+        fileParams.set('file_base64_0',  f.base64);
+
+        await fetch(APPS_SCRIPT_URL + '?' + fileParams.toString(), {
+          method: 'GET', mode: 'no-cors'
         });
-
-        showLoading(false);
-        if (notionRes.ok) {
-          showSuccess();
-        } else {
-          const err = await notionRes.json();
-          showToast(`送出失敗：${err.message || '請確認設定'}`, true);
-        }
-      } catch (e2) {
-        showLoading(false);
-        showToast('網路錯誤，請確認網路連線', true);
+        await new Promise(r => setTimeout(r, 1000));
       }
+
+      showLoading(false);
+      showSuccess();
+    } catch(err) {
+      showLoading(false);
+      showToast('網路錯誤，請確認連線後重試', true);
     }
   }
 
-  // ── UI 工具函式 ──────────────────────────────────
   function showLoading(show) {
     document.getElementById('loadingOverlay').classList.toggle('show', show);
     document.getElementById('submitBtn').disabled = show;
@@ -733,11 +657,9 @@ Token: ${token}
   function resetForm() {
     document.getElementById('successScreen').classList.remove('show');
     document.getElementById('formArea').style.display = 'block';
-    document.getElementById('consultant').value = '';
-    document.getElementById('client').value = '';
-    document.getElementById('title').value = '';
-    document.getElementById('module').value = '';
-    document.getElementById('description').value = '';
+    ['consultant','client','title','module','description'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
     document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
     Object.keys(SELECTED).forEach(k => delete SELECTED[k]);
     attachedFiles = [];
@@ -746,7 +668,7 @@ Token: ${token}
     window.scrollTo(0, 0);
   }
 
-  function showToast(msg, isError = false) {
+  function showToast(msg, isError) {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.className = 'toast show' + (isError ? ' error' : '');

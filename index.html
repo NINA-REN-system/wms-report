@@ -362,7 +362,10 @@
   <div class="success-screen" id="successScreen">
     <div class="success-icon">✓</div>
     <h2>回報成功！</h2>
-    <p>問題已記錄至 Google 表單<br>系統將自動同步至 Notion 客戶現場問題庫<br>顧問主管將會收到通知</p>
+    <p>問題已記錄至系統<br>若有截圖或錄影，請點下方按鈕上傳至雲端資料夾</p>
+    <a id="driveBtn" href="https://drive.google.com/drive/folders/1Gw4vEWvaLLf4kJ5D7zx2yZGQMd7thAa-8I-JebnRDJmSz7Oqq727PQjsfpUE59OYNRSm4h9m" target="_blank" style="display:block;background:#1A7A4A;color:white;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;text-decoration:none;margin-bottom:12px;text-align:center;">
+      📁 上傳截圖／錄影到雲端
+    </a>
     <button class="reset-btn" onclick="resetForm()">繼續回報下一個問題</button>
   </div>
 
@@ -571,36 +574,8 @@
     parts.push('【回報日期】' + today());
     const fullDesc = parts.filter(Boolean).join('\n');
 
-    // 附件壓縮到 800px / 70% 品質
-    const validFiles = attachedFiles.filter(Boolean);
-    const fileDataList = await Promise.all(validFiles.map(file => {
-      return new Promise((resolve) => {
-        if (file.type.startsWith('image/')) {
-          const img = new Image();
-          const url = URL.createObjectURL(file);
-          img.onload = () => {
-            const MAX = 800;
-            let w = img.width, h = img.height;
-            if (w > MAX || h > MAX) {
-              if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-              else       { w = Math.round(w * MAX / h); h = MAX; }
-            }
-            const canvas = document.createElement('canvas');
-            canvas.width = w; canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-            URL.revokeObjectURL(url);
-            resolve({ name: file.name + '.jpg', type: 'image/jpeg', base64 });
-          };
-          img.src = url;
-        } else {
-          resolve({ name: file.name, type: file.type, base64: '' });
-        }
-      });
-    }));
-
+    // 送出文字資料
     try {
-      // ── 第一次：POST 文字資料 ──
       const textPayload = {
         consultant:  document.getElementById('consultant').value,
         client:      document.getElementById('client').value,
@@ -617,30 +592,6 @@
         headers: { 'Content-Type': 'text/plain' },
         body:    JSON.stringify(textPayload),
       });
-      await new Promise(r => setTimeout(r, 1000));
-
-      // ── 第二次：逐張 POST 附件 ──
-      for (let i = 0; i < fileDataList.length; i++) {
-        const f = fileDataList[i];
-        if (!f.base64) continue;
-
-        const filePayload = {
-          appendFileOnly: 'true',
-          consultant:     document.getElementById('consultant').value,
-          client:         document.getElementById('client').value,
-          fileCount:      '1',
-          file_name_0:    f.name,
-          file_type_0:    f.type,
-          file_base64_0:  f.base64,
-        };
-
-        await fetch(APPS_SCRIPT_URL, {
-          method:  'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body:    JSON.stringify(filePayload),
-        });
-        await new Promise(r => setTimeout(r, 1000));
-      }
 
       showLoading(false);
       showSuccess();

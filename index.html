@@ -3,369 +3,152 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>智聯雲倉｜現場問題回報</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #F5F3EE;
-    --card: #FFFFFF;
-    --primary: #1A1A2E;
-    --accent: #E8501A;
-    --accent-light: #FFF0EB;
-    --text: #1A1A2E;
-    --text-sub: #6B6B6B;
-    --border: #E0DDD6;
-    --success: #1A7A4A;
-    --success-bg: #E8F5EE;
-    --radius: 16px;
-    --radius-sm: 10px;
+    --bg: #F5F3EE; --card: #FFFFFF; --primary: #1A1A2E;
+    --accent: #E8501A; --accent-light: #FFF0EB;
+    --text: #1A1A2E; --text-sub: #6B6B6B; --border: #E0DDD6;
+    --success: #1A7A4A; --success-bg: #E8F5EE;
+    --radius: 16px; --radius-sm: 10px;
   }
+  body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 40px; }
 
-  body {
-    font-family: 'Noto Sans TC', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding-bottom: 40px;
-  }
-
-  /* ── Header ── */
-  .header {
-    background: var(--primary);
-    color: white;
-    padding: 20px 20px 24px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 4px;
-  }
-  .logo {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    color: rgba(255,255,255,0.5);
-    text-transform: uppercase;
-  }
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: #4CAF50;
-    box-shadow: 0 0 6px #4CAF50;
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-  .header h1 {
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
+  /* Header */
+  .header { background: var(--primary); color: white; padding: 20px 20px 24px; position: sticky; top: 0; z-index: 100; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .logo { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4CAF50; box-shadow: 0 0 6px #4CAF50; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
   .header h1 span { color: var(--accent); }
 
-  /* ── Main ── */
+  /* Login Screen */
+  .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; padding: 32px 24px; text-align: center; }
+  .login-icon { font-size: 48px; margin-bottom: 16px; }
+  .login-screen h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .login-screen p { font-size: 14px; color: var(--text-sub); line-height: 1.6; margin-bottom: 28px; }
+  .google-btn { display: flex; align-items: center; gap: 12px; background: white; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px 24px; font-family: 'Noto Sans TC', sans-serif; font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .google-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+  .google-btn img { width: 20px; height: 20px; }
+  .user-info { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 12px 4px 4px; }
+  .user-avatar { width: 28px; height: 28px; border-radius: 50%; }
+  .user-name { font-size: 12px; color: white; font-weight: 500; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Main */
   .main { padding: 20px 16px; max-width: 480px; margin: 0 auto; }
+  .card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; border: 1px solid var(--border); }
+  .card-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .card-title::before { content:''; display:inline-block; width:3px; height:14px; background:var(--accent); border-radius:2px; }
 
-  /* ── Section Card ── */
-  .card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 14px;
-    border: 1px solid var(--border);
-  }
-  .card-title {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-sub);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .card-title::before {
-    content: '';
-    display: inline-block;
-    width: 3px; height: 14px;
-    background: var(--accent);
-    border-radius: 2px;
-  }
-
-  /* ── Form Elements ── */
-  label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-sub);
-    margin-bottom: 6px;
-  }
-  .required::after { content: ' *'; color: var(--accent); }
-
-  select, textarea, input[type="text"] {
-    width: 100%;
-    font-family: 'Noto Sans TC', sans-serif;
-    font-size: 15px;
-    color: var(--text);
-    background: var(--bg);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    appearance: none;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  select:focus, textarea:focus, input[type="text"]:focus {
-    border-color: var(--accent);
-    background: white;
-  }
-  select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B6B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 36px;
-  }
+  label { display: block; font-size: 13px; font-weight: 500; color: var(--text-sub); margin-bottom: 6px; }
+  .required::after { content:' *'; color: var(--accent); }
+  select, textarea, input[type="text"] { width: 100%; font-family: 'Noto Sans TC', sans-serif; font-size: 15px; color: var(--text); background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; appearance: none; outline: none; transition: border-color 0.15s; }
+  select:focus, textarea:focus, input[type="text"]:focus { border-color: var(--accent); background: white; }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B6B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
   textarea { resize: none; line-height: 1.6; }
   .field { margin-bottom: 14px; }
   .field:last-child { margin-bottom: 0; }
 
-  /* ── Tag Grid（問題性質 / 緊急度） ── */
-  .tag-grid {
-    display: grid;
-    gap: 8px;
-  }
+  .tag-grid { display: grid; gap: 8px; }
   .tag-grid-2 { grid-template-columns: 1fr 1fr; }
   .tag-grid-4 { grid-template-columns: 1fr 1fr; }
-
-  .tag-btn {
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 11px 10px;
-    font-family: 'Noto Sans TC', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-sub);
-    background: var(--bg);
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-    line-height: 1.3;
-  }
+  .tag-btn { border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 11px 10px; font-family: 'Noto Sans TC', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-sub); background: var(--bg); cursor: pointer; text-align: center; transition: all 0.15s; line-height: 1.3; }
   .tag-btn:active { transform: scale(0.97); }
-  .tag-btn.selected {
-    border-color: var(--accent);
-    background: var(--accent-light);
-    color: var(--accent);
-  }
+  .tag-btn.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
   .tag-btn .tag-icon { display: block; font-size: 18px; margin-bottom: 3px; }
+  .tag-btn.urgent.selected { border-color: #CC2200; background: #FFF0EB; color: #CC2200; }
+  .tag-btn.normal.selected { border-color: #1A7A4A; background: #E8F5EE; color: #1A7A4A; }
 
-  /* ── 緊急度特殊 ── */
-  .tag-btn.urgent.selected {
-    border-color: #CC2200;
-    background: #FFF0EB;
-    color: #CC2200;
-  }
-  .tag-btn.normal.selected {
-    border-color: #1A7A4A;
-    background: #E8F5EE;
-    color: #1A7A4A;
-  }
-
-  /* ── 附件上傳 ── */
-  .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: var(--radius-sm);
-    padding: 24px 16px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.15s;
-    background: var(--bg);
-    position: relative;
-  }
+  /* 附件上傳 */
+  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 24px 16px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--bg); position: relative; }
   .upload-zone:active { border-color: var(--accent); background: var(--accent-light); }
-  .upload-zone input[type="file"] {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-  }
+  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
   .upload-icon { font-size: 28px; display: block; margin-bottom: 6px; }
   .upload-text { font-size: 13px; color: var(--text-sub); line-height: 1.5; }
   .upload-text strong { color: var(--accent); font-weight: 600; }
 
-  /* ── 附件預覽 ── */
-  .preview-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .preview-item {
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: 8px;
-    overflow: hidden;
-    background: var(--border);
-  }
-  .preview-item img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-  }
-  .preview-item .preview-label {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; color: white; font-weight: 600;
-    background: rgba(0,0,0,0.5);
-    text-align: center; padding: 4px;
-  }
-  .preview-item .remove-btn {
-    position: absolute; top: 4px; right: 4px;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.6);
-    color: white; border: none;
-    font-size: 12px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    line-height: 1;
-  }
+  /* 附件預覽 */
+  .preview-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .preview-item { display: flex; align-items: center; gap: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; }
+  .preview-item .file-icon { font-size: 20px; flex-shrink: 0; }
+  .preview-item .file-info { flex: 1; min-width: 0; }
+  .preview-item .file-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .preview-item .file-status { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+  .preview-item .file-status.uploading { color: #E8501A; }
+  .preview-item .file-status.done { color: #1A7A4A; }
+  .preview-item .file-status.error { color: #CC2200; }
+  .remove-file { background: none; border: none; cursor: pointer; color: var(--text-sub); font-size: 16px; flex-shrink: 0; padding: 2px; }
 
-  /* ── 流程說明 badge ── */
-  .flow-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--accent-light);
-    border: 1px solid #F4C4B3;
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 14px;
-    font-size: 12px;
-    color: var(--accent);
-    font-weight: 500;
-    line-height: 1.5;
-  }
-  .flow-badge .flow-icon { font-size: 16px; flex-shrink: 0; }
+  .flow-badge { display: flex; align-items: center; gap: 6px; background: var(--accent-light); border: 1px solid #F4C4B3; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: var(--accent); font-weight: 500; line-height: 1.5; }
 
-  /* ── 送出按鈕 ── */
-  .submit-btn {
-    width: 100%;
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    padding: 18px;
-    font-family: 'Noto Sans TC', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    margin-top: 8px;
-  }
+  .submit-btn { width: 100%; background: var(--accent); color: white; border: none; border-radius: var(--radius); padding: 18px; font-family: 'Noto Sans TC', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
   .submit-btn:active { transform: scale(0.98); opacity: 0.9; }
   .submit-btn:disabled { background: var(--border); color: var(--text-sub); cursor: not-allowed; transform: none; }
 
-  /* ── 成功畫面 ── */
-  .success-screen {
-    display: none;
-    text-align: center;
-    padding: 48px 24px;
-  }
+  /* 成功畫面 */
+  .success-screen { display: none; text-align: center; padding: 48px 24px; }
   .success-screen.show { display: block; }
-  .success-icon {
-    width: 72px; height: 72px;
-    background: var(--success-bg);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 20px;
-    font-size: 32px;
-  }
+  .success-icon { width: 72px; height: 72px; background: var(--success-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 32px; }
   .success-screen h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
   .success-screen p { font-size: 14px; color: var(--text-sub); line-height: 1.6; margin-bottom: 24px; }
-  .reset-btn {
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    padding: 14px 32px;
-    font-family: 'Noto Sans TC', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-  }
+  .reset-btn { background: var(--primary); color: white; border: none; border-radius: var(--radius); padding: 14px 32px; font-family: 'Noto Sans TC', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; }
 
-  /* ── Loading overlay ── */
-  .loading-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(26,26,46,0.6);
-    z-index: 200;
-    align-items: center; justify-content: center;
-    flex-direction: column; gap: 16px;
-  }
+  /* Loading */
+  .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(26,26,46,0.6); z-index: 200; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
   .loading-overlay.show { display: flex; }
-  .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid rgba(255,255,255,0.2);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
+  .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { color: white; font-size: 14px; font-weight: 500; }
 
-  /* ── Toast ── */
-  .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
-    background: var(--primary); color: white;
-    padding: 12px 20px; border-radius: 100px;
-    font-size: 13px; font-weight: 500;
-    transition: transform 0.3s ease;
-    z-index: 300; white-space: nowrap;
-  }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--primary); color: white; padding: 12px 20px; border-radius: 100px; font-size: 13px; font-weight: 500; transition: transform 0.3s ease; z-index: 300; white-space: nowrap; }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.error { background: #CC2200; }
 </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
   <div class="header-top">
     <span class="logo">智互聯產品中心</span>
-    <div class="status-dot"></div>
+    <div id="userInfo" style="display:none;">
+      <div class="user-info">
+        <img class="user-avatar" id="userAvatar" src="" alt="">
+        <span class="user-name" id="userName"></span>
+      </div>
+    </div>
+    <div class="status-dot" id="statusDot" style="display:none;"></div>
   </div>
   <h1>智聯雲倉<span>｜</span>現場回報</h1>
 </div>
 
-<!-- Loading -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
-  <div class="loading-text">回報中，請稍候...</div>
+  <div class="loading-text" id="loadingText">回報中，請稍候...</div>
 </div>
-
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- Main -->
-<div class="main">
+<!-- 登入畫面 -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-icon">🔐</div>
+  <h2>請先登入 Google 帳號</h2>
+  <p>登入後即可使用現場問題回報功能<br>附件將自動上傳至智聯雲倉雲端資料夾</p>
+  <button class="google-btn" onclick="signIn()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+    使用 Google 帳號登入
+  </button>
+</div>
+
+<div class="main" id="mainArea" style="display:none;">
 
   <!-- 成功畫面 -->
   <div class="success-screen" id="successScreen">
     <div class="success-icon">✓</div>
     <h2>回報成功！</h2>
-    <p>問題已記錄至系統<br>若有截圖或錄影，請點下方按鈕上傳至雲端資料夾</p>
-    <a id="driveBtn" href="https://drive.google.com/drive/folders/1Gw4vEWvaLLf4kJ5D7zx2yZGQMd7thAa-8I-JebnRDJmSz7Oqq727PQjsfpUE59OYNRSm4h9m" target="_blank" style="display:block;background:#1A7A4A;color:white;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;text-decoration:none;margin-bottom:12px;text-align:center;">
-      📁 上傳截圖／錄影到雲端
-    </a>
+    <p id="successMsg">問題已記錄至系統</p>
     <button class="reset-btn" onclick="resetForm()">繼續回報下一個問題</button>
   </div>
 
@@ -375,12 +158,10 @@
     <!-- ① 顧問資訊 -->
     <div class="card">
       <div class="card-title">顧問資訊</div>
-
       <div class="field">
         <label class="required">顧問姓名</label>
         <select id="consultant">
           <option value="">請選擇顧問</option>
-          <!-- ✏️ 新增顧問：在下方複製一行並修改姓名 -->
           <option value="REX">REX</option>
           <option value="俊榮">俊榮</option>
           <option value="美倫姐">美倫姐</option>
@@ -389,19 +170,15 @@
           <option value="冠妡">冠妡</option>
           <option value="怡人">怡人</option>
           <option value="咏真">咏真</option>
-          <!-- 新增顧問範例：<option value="新顧問姓名">新顧問姓名</option> -->
         </select>
       </div>
-
       <div class="field">
         <label class="required">客戶名稱</label>
         <select id="client">
           <option value="">請選擇客戶</option>
-          <!-- ✏️ 新增客戶：在下方複製一行並修改名稱 -->
           <option value="永勝">永勝</option>
           <option value="泰碩">泰碩</option>
           <option value="東元">東元</option>
-          <!-- 新增客戶範例：<option value="新客戶名稱">新客戶名稱</option> -->
         </select>
       </div>
     </div>
@@ -409,30 +186,19 @@
     <!-- ② 問題描述 -->
     <div class="card">
       <div class="card-title">問題描述</div>
-
       <div class="field">
         <label class="required">問題摘要</label>
         <input type="text" id="title" placeholder="一句話描述問題，例如：掃碼收貨無法提交">
       </div>
-
       <div class="field">
         <label class="required">問題性質</label>
         <div class="tag-grid tag-grid-4">
-          <button class="tag-btn" data-group="nature" data-value="系統BUG" onclick="selectTag(this)">
-            <span class="tag-icon">🐛</span>系統 BUG
-          </button>
-          <button class="tag-btn" data-group="nature" data-value="操作錯誤" onclick="selectTag(this)">
-            <span class="tag-icon">👆</span>操作錯誤
-          </button>
-          <button class="tag-btn" data-group="nature" data-value="功能缺口" onclick="selectTag(this)">
-            <span class="tag-icon">🔧</span>功能缺口
-          </button>
-          <button class="tag-btn" data-group="nature" data-value="環境設定" onclick="selectTag(this)">
-            <span class="tag-icon">⚙️</span>環境設定
-          </button>
+          <button class="tag-btn" data-group="nature" data-value="系統BUG" onclick="selectTag(this)"><span class="tag-icon">🐛</span>系統 BUG</button>
+          <button class="tag-btn" data-group="nature" data-value="操作錯誤" onclick="selectTag(this)"><span class="tag-icon">👆</span>操作錯誤</button>
+          <button class="tag-btn" data-group="nature" data-value="功能缺口" onclick="selectTag(this)"><span class="tag-icon">🔧</span>功能缺口</button>
+          <button class="tag-btn" data-group="nature" data-value="環境設定" onclick="selectTag(this)"><span class="tag-icon">⚙️</span>環境設定</button>
         </div>
       </div>
-
       <div class="field">
         <label>問題模組</label>
         <select id="module">
@@ -449,10 +215,9 @@
           <option value="其他">其他</option>
         </select>
       </div>
-
       <div class="field">
         <label>現場詳細描述</label>
-        <textarea id="description" rows="4" placeholder="詳細說明問題發生的步驟與情境，越詳細越容易追蹤..."></textarea>
+        <textarea id="description" rows="4" placeholder="詳細說明問題發生的步驟與情境..."></textarea>
       </div>
     </div>
 
@@ -469,76 +234,149 @@
       </div>
     </div>
 
-
-
-    <!-- 送出流程說明 -->
-    <div class="flow-badge">
-      <span class="flow-icon">🔄</span>
-      <span>送出後將寫入 Google 表單，系統自動透過 Make 同步至 Notion 現場問題庫</span>
+    <!-- ④ 附件上傳 -->
+    <div class="card">
+      <div class="card-title">附件（截圖／錄影）</div>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" accept="image/*,video/*" multiple onchange="handleFiles(this.files)">
+        <span class="upload-icon">📎</span>
+        <div class="upload-text">點此選取截圖或錄影（可不填）<br><strong>支援 JPG、PNG、MP4、MOV</strong></div>
+      </div>
+      <div class="preview-list" id="previewList"></div>
     </div>
 
-    <!-- 送出 -->
+    <div class="flow-badge">
+      <span>🔄</span>
+      <span>送出後資料自動寫入系統，附件同步上傳至智聯雲倉雲端資料夾</span>
+    </div>
+
     <button class="submit-btn" id="submitBtn" onclick="submitReport()">
       <span>📤</span> 送出問題回報
     </button>
+  </div>
+</div>
 
-  </div><!-- /formArea -->
-</div><!-- /main -->
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- Google API Client -->
+<script src="https://apis.google.com/js/api.js"></script>
 
 <script>
-  // Apps Script 網址（資料會直接寫入 Google 試算表）
+  // ══════════════════════════════════════════
+  // 設定
+  // ══════════════════════════════════════════
+  const CLIENT_ID      = '701910642608-ts098dq2rqlf4uvk8vo4j9ngdc2p5jsh.apps.googleusercontent.com';
+  const FOLDER_ID      = '1Gw4vEWvaLLf4kJ5D7zx2yZGQMd7thAa-8I-JebnRDJmSz7Oqq727PQjsfpUE59OYNRSm4h9m';
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxgEtAj7ifD32k9sjY23TuebgQj0WjoF4kUGQJB_WVLgSAcOsOSzay4rKgAWBQsdMyNow/exec';
-  const FORM_ENTRY = {
-    consultant:  'entry.68723739',
-    client:      'entry.1844282848',
-    title:       'entry.502654430',
-    nature:      'entry.1978639996',
-    module:      'entry.416608529',
-    description: 'entry.362949306',
-    urgent:      'entry.287268780',
-  };
+  const SCOPES         = 'https://www.googleapis.com/auth/drive.file';
 
-  const SELECTED = {};
-  let attachedFiles = [];
+  let accessToken  = null;
+  let tokenClient  = null;
+  const SELECTED   = {};
+  let selectedFiles = [];
 
-  function selectTag(btn) {
-    const group = btn.dataset.group;
-    document.querySelectorAll('[data-group="' + group + '"]').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    SELECTED[group] = btn.dataset.value;
-  }
-
-  function handleFiles(files) {
-    Array.from(files).forEach(file => {
-      if (attachedFiles.length >= 6) { showToast('最多上傳 6 個附件', true); return; }
-      attachedFiles.push(file);
-      renderPreview(file, attachedFiles.length - 1);
+  // ── Google 登入 ──────────────────────────
+  function initGoogleAuth() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: (resp) => {
+        if (resp.error) { showToast('登入失敗，請重試', true); return; }
+        accessToken = resp.access_token;
+        // 取得使用者資訊
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: 'Bearer ' + accessToken }
+        }).then(r => r.json()).then(info => {
+          document.getElementById('userAvatar').src = info.picture || '';
+          document.getElementById('userName').textContent = info.name || info.email || '';
+          document.getElementById('userInfo').style.display = 'block';
+          document.getElementById('statusDot').style.display = 'block';
+        });
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainArea').style.display = 'block';
+      }
     });
   }
 
-  function renderPreview(file, idx) {
-    const grid = document.getElementById('previewGrid');
-    const item = document.createElement('div');
-    item.className = 'preview-item';
-    item.id = 'preview-' + idx;
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        item.innerHTML = '<img src="' + e.target.result + '" alt=""><button class="remove-btn" onclick="removeFile(' + idx + ')">x</button>';
-      };
-      reader.readAsDataURL(file);
-    } else {
-      item.innerHTML = '<div class="preview-label">file<br>' + file.name.slice(0,12) + '</div><button class="remove-btn" onclick="removeFile(' + idx + ')">x</button>';
-    }
-    grid.appendChild(item);
+  function signIn() {
+    if (tokenClient) tokenClient.requestAccessToken();
+  }
+
+  window.addEventListener('load', () => {
+    // 等 GSI 載入
+    const check = setInterval(() => {
+      if (window.google && google.accounts) {
+        clearInterval(check);
+        initGoogleAuth();
+      }
+    }, 200);
+  });
+
+  // ── 附件選取 ─────────────────────────────
+  function handleFiles(files) {
+    Array.from(files).forEach(file => {
+      if (selectedFiles.length >= 6) { showToast('最多選取 6 個附件', true); return; }
+      selectedFiles.push({ file, status: 'pending', driveUrl: '', driveId: '' });
+      renderFileItem(selectedFiles.length - 1);
+    });
+    document.getElementById('fileInput').value = '';
+  }
+
+  function renderFileItem(idx) {
+    const list = document.getElementById('previewList');
+    const f    = selectedFiles[idx];
+    const isImg = f.file.type.startsWith('image/');
+    const el  = document.createElement('div');
+    el.className = 'preview-item';
+    el.id = 'file-item-' + idx;
+    el.innerHTML =
+      '<span class="file-icon">' + (isImg ? '🖼️' : '🎬') + '</span>' +
+      '<div class="file-info">' +
+        '<div class="file-name">' + f.file.name + '</div>' +
+        '<div class="file-status" id="file-status-' + idx + '">待上傳</div>' +
+      '</div>' +
+      '<button class="remove-file" onclick="removeFile(' + idx + ')">✕</button>';
+    list.appendChild(el);
   }
 
   function removeFile(idx) {
-    attachedFiles[idx] = null;
-    const el = document.getElementById('preview-' + idx);
+    selectedFiles[idx] = null;
+    const el = document.getElementById('file-item-' + idx);
     if (el) el.remove();
   }
 
+  function setFileStatus(idx, text, cls) {
+    const el = document.getElementById('file-status-' + idx);
+    if (el) { el.textContent = text; el.className = 'file-status ' + cls; }
+  }
+
+  // ── 上傳單一檔案到 Drive ─────────────────
+  async function uploadToDrive(file, idx) {
+    setFileStatus(idx, '上傳中...', 'uploading');
+    const meta = JSON.stringify({ name: file.name, parents: [FOLDER_ID] });
+    const form = new FormData();
+    form.append('metadata', new Blob([meta], { type: 'application/json' }));
+    form.append('file', file);
+
+    const res = await fetch(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',
+      { method: 'POST', headers: { Authorization: 'Bearer ' + accessToken }, body: form }
+    );
+    if (!res.ok) throw new Error('上傳失敗 ' + res.status);
+    const data = await res.json();
+
+    // 設定公開可檢視
+    await fetch('https://www.googleapis.com/drive/v3/files/' + data.id + '/permissions', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'reader', type: 'anyone' })
+    });
+
+    setFileStatus(idx, '✓ 上傳完成', 'done');
+    return { name: data.name, url: data.webViewLink, id: data.id };
+  }
+
+  // ── 驗證 ─────────────────────────────────
   function validate() {
     if (!document.getElementById('consultant').value) { showToast('請選擇顧問姓名', true); return false; }
     if (!document.getElementById('client').value)     { showToast('請選擇客戶名稱', true); return false; }
@@ -548,59 +386,85 @@
     return true;
   }
 
-  function today() {
-    return new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
-  }
-
+  // ── 送出 ─────────────────────────────────
   async function submitReport() {
     if (!validate()) return;
-    showLoading(true);
-    const fileNames = attachedFiles.filter(Boolean).map(f => f.name).join('、');
-    const baseDesc  = document.getElementById('description').value.trim();
-    const parts = [baseDesc];
-    if (fileNames) parts.push('【附件】' + fileNames);
-    parts.push('【回報日期】' + today());
-    const fullDesc = parts.filter(Boolean).join('\n');
+    if (!accessToken) { showToast('請先登入 Google 帳號', true); return; }
+    showLoading(true, '上傳附件中...');
 
-    // 送出文字資料
+    // 上傳所有附件
+    const validFiles = selectedFiles.filter(Boolean);
+    const uploadResults = [];
+    for (let i = 0; i < selectedFiles.length; i++) {
+      if (!selectedFiles[i]) continue;
+      try {
+        const result = await uploadToDrive(selectedFiles[i].file, i);
+        uploadResults.push(result);
+      } catch(err) {
+        setFileStatus(i, '❌ 上傳失敗', 'error');
+        console.error(err);
+      }
+    }
+
+    setLoadingText('寫入系統中...');
+
+    const fileNames = uploadResults.map(r => r.name).join('、');
+    const fileLinks = uploadResults.map(r => r.url).join('\n');
+
+    const payload = {
+      consultant:  document.getElementById('consultant').value,
+      client:      document.getElementById('client').value,
+      title:       document.getElementById('title').value.trim(),
+      nature:      SELECTED['nature'] || '',
+      module:      document.getElementById('module').value || '',
+      description: document.getElementById('description').value.trim(),
+      urgent:      SELECTED['urgent'] || '',
+      hasAttach:   uploadResults.length > 0 ? '是' : '否',
+      fileNames:   fileNames,
+      fileLinks:   fileLinks,
+    };
+
     try {
-      const textPayload = {
-        consultant:  document.getElementById('consultant').value,
-        client:      document.getElementById('client').value,
-        title:       document.getElementById('title').value.trim(),
-        nature:      SELECTED['nature'] || '',
-        module:      document.getElementById('module').value || '',
-        description: fullDesc,
-        urgent:      SELECTED['urgent'] || '',
-        fileCount:   '0',
-      };
-
       await fetch(APPS_SCRIPT_URL, {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body:    JSON.stringify(textPayload),
+        body: JSON.stringify(payload),
       });
 
       showLoading(false);
+      const attachInfo = uploadResults.length > 0
+        ? '附件已上傳：' + fileNames
+        : '（無附件）';
+      document.getElementById('successMsg').textContent = '問題已記錄至系統｜' + attachInfo;
       showSuccess();
     } catch(err) {
-      console.error(err);
       showLoading(false);
-      showToast('網路錯誤，請確認連線後重試', true);
+      showToast('寫入失敗，請重試', true);
     }
   }
 
-  function showLoading(show) {
-    document.getElementById('loadingOverlay').classList.toggle('show', show);
-    document.getElementById('submitBtn').disabled = show;
+  // ── Tag ──────────────────────────────────
+  function selectTag(btn) {
+    const group = btn.dataset.group;
+    document.querySelectorAll('[data-group="' + group + '"]').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    SELECTED[group] = btn.dataset.value;
   }
 
+  // ── UI ───────────────────────────────────
+  function showLoading(show, text) {
+    document.getElementById('loadingOverlay').classList.toggle('show', show);
+    document.getElementById('submitBtn').disabled = show;
+    if (text) document.getElementById('loadingText').textContent = text;
+  }
+  function setLoadingText(text) {
+    document.getElementById('loadingText').textContent = text;
+  }
   function showSuccess() {
     document.getElementById('formArea').style.display = 'none';
     document.getElementById('successScreen').classList.add('show');
     window.scrollTo(0, 0);
   }
-
   function resetForm() {
     document.getElementById('successScreen').classList.remove('show');
     document.getElementById('formArea').style.display = 'block';
@@ -609,12 +473,11 @@
     });
     document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
     Object.keys(SELECTED).forEach(k => delete SELECTED[k]);
-    attachedFiles = [];
-    document.getElementById('previewGrid').innerHTML = '';
+    selectedFiles = [];
+    document.getElementById('previewList').innerHTML = '';
     document.getElementById('submitBtn').disabled = false;
     window.scrollTo(0, 0);
   }
-
   function showToast(msg, isError) {
     const t = document.getElementById('toast');
     t.textContent = msg;

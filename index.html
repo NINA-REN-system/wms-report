@@ -571,7 +571,7 @@
     parts.push('【回報日期】' + today());
     const fullDesc = parts.filter(Boolean).join('\n');
 
-    // 附件壓縮到 400px / 50% 品質，確保 base64 夠小
+    // 附件壓縮到 800px / 70% 品質
     const validFiles = attachedFiles.filter(Boolean);
     const fileDataList = await Promise.all(validFiles.map(file => {
       return new Promise((resolve) => {
@@ -579,7 +579,7 @@
           const img = new Image();
           const url = URL.createObjectURL(file);
           img.onload = () => {
-            const MAX = 400;
+            const MAX = 800;
             let w = img.width, h = img.height;
             if (w > MAX || h > MAX) {
               if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -588,49 +588,56 @@
             const canvas = document.createElement('canvas');
             canvas.width = w; canvas.height = h;
             canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            const base64 = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
+            const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
             URL.revokeObjectURL(url);
             resolve({ name: file.name + '.jpg', type: 'image/jpeg', base64 });
           };
           img.src = url;
         } else {
-          resolve({ name: file.name, type: file.type, base64: '' }); // 非圖片略過
+          resolve({ name: file.name, type: file.type, base64: '' });
         }
       });
     }));
 
     try {
-      // ── 送出文字資料 ──
-      const textParams = new URLSearchParams();
-      textParams.set('consultant',  document.getElementById('consultant').value);
-      textParams.set('client',      document.getElementById('client').value);
-      textParams.set('title',       document.getElementById('title').value.trim());
-      textParams.set('nature',      SELECTED['nature'] || '');
-      textParams.set('module',      document.getElementById('module').value || '');
-      textParams.set('description', fullDesc);
-      textParams.set('urgent',      SELECTED['urgent'] || '');
-      textParams.set('fileCount',   '0');
+      // ── 第一次：POST 文字資料 ──
+      const textPayload = {
+        consultant:  document.getElementById('consultant').value,
+        client:      document.getElementById('client').value,
+        title:       document.getElementById('title').value.trim(),
+        nature:      SELECTED['nature'] || '',
+        module:      document.getElementById('module').value || '',
+        description: fullDesc,
+        urgent:      SELECTED['urgent'] || '',
+        fileCount:   '0',
+      };
 
-      await fetch(APPS_SCRIPT_URL + '?' + textParams.toString(), {
-        method: 'GET', mode: 'no-cors'
+      await fetch(APPS_SCRIPT_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body:    JSON.stringify(textPayload),
       });
       await new Promise(r => setTimeout(r, 1000));
 
-      // ── 逐張送出附件 ──
+      // ── 第二次：逐張 POST 附件 ──
       for (let i = 0; i < fileDataList.length; i++) {
         const f = fileDataList[i];
         if (!f.base64) continue;
-        const fileParams = new URLSearchParams();
-        fileParams.set('appendFileOnly', 'true');
-        fileParams.set('consultant',     document.getElementById('consultant').value);
-        fileParams.set('client',         document.getElementById('client').value);
-        fileParams.set('fileCount',      '1');
-        fileParams.set('file_name_0',    f.name);
-        fileParams.set('file_type_0',    f.type);
-        fileParams.set('file_base64_0',  f.base64);
 
-        await fetch(APPS_SCRIPT_URL + '?' + fileParams.toString(), {
-          method: 'GET', mode: 'no-cors'
+        const filePayload = {
+          appendFileOnly: 'true',
+          consultant:     document.getElementById('consultant').value,
+          client:         document.getElementById('client').value,
+          fileCount:      '1',
+          file_name_0:    f.name,
+          file_type_0:    f.type,
+          file_base64_0:  f.base64,
+        };
+
+        await fetch(APPS_SCRIPT_URL, {
+          method:  'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body:    JSON.stringify(filePayload),
         });
         await new Promise(r => setTimeout(r, 1000));
       }
@@ -638,6 +645,7 @@
       showLoading(false);
       showSuccess();
     } catch(err) {
+      console.error(err);
       showLoading(false);
       showToast('網路錯誤，請確認連線後重試', true);
     }

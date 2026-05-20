@@ -21,22 +21,19 @@
   .header { background: var(--primary); color: white; padding: 20px 20px 24px; position: sticky; top: 0; z-index: 100; }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .logo { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+  .user-info { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 4px 12px 4px 4px; }
+  .user-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; }
+  .user-name { font-size: 12px; color: white; font-weight: 500; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4CAF50; box-shadow: 0 0 6px #4CAF50; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
   .header h1 span { color: var(--accent); }
 
-  /* Login Screen */
-  .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; padding: 32px 24px; text-align: center; }
-  .login-icon { font-size: 48px; margin-bottom: 16px; }
-  .login-screen h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-  .login-screen p { font-size: 14px; color: var(--text-sub); line-height: 1.6; margin-bottom: 28px; }
-  .google-btn { display: flex; align-items: center; gap: 12px; background: white; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px 24px; font-family: 'Noto Sans TC', sans-serif; font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .google-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
-  .google-btn img { width: 20px; height: 20px; }
-  .user-info { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 12px 4px 4px; }
-  .user-avatar { width: 28px; height: 28px; border-radius: 50%; }
-  .user-name { font-size: 12px; color: white; font-weight: 500; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* 初始化畫面 */
+  .init-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; padding: 32px 24px; text-align: center; }
+  .init-icon { font-size: 48px; margin-bottom: 16px; animation: bounce 1s infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .init-screen p { font-size: 14px; color: var(--text-sub); }
 
   /* Main */
   .main { padding: 20px 16px; max-width: 480px; margin: 0 auto; }
@@ -53,6 +50,13 @@
   .field { margin-bottom: 14px; }
   .field:last-child { margin-bottom: 0; }
 
+  /* LINE 使用者資訊卡 */
+  .line-user-card { display: flex; align-items: center; gap: 12px; background: #EEF9F0; border: 1.5px solid #A8D5B5; border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; }
+  .line-user-card img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+  .line-user-card .line-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .line-user-card .line-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+
+  /* Tag Grid */
   .tag-grid { display: grid; gap: 8px; }
   .tag-grid-2 { grid-template-columns: 1fr 1fr; }
   .tag-grid-4 { grid-template-columns: 1fr 1fr; }
@@ -63,28 +67,27 @@
   .tag-btn.urgent.selected { border-color: #CC2200; background: #FFF0EB; color: #CC2200; }
   .tag-btn.normal.selected { border-color: #1A7A4A; background: #E8F5EE; color: #1A7A4A; }
 
-  /* 附件上傳 */
+  /* 附件 */
   .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 24px 16px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--bg); position: relative; }
-  .upload-zone:active { border-color: var(--accent); background: var(--accent-light); }
   .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
   .upload-icon { font-size: 28px; display: block; margin-bottom: 6px; }
   .upload-text { font-size: 13px; color: var(--text-sub); line-height: 1.5; }
-  .upload-text strong { color: var(--accent); font-weight: 600; }
-
-  /* 附件預覽 */
+  .upload-text strong { color: var(--accent); }
   .preview-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
   .preview-item { display: flex; align-items: center; gap: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; }
-  .preview-item .file-icon { font-size: 20px; flex-shrink: 0; }
-  .preview-item .file-info { flex: 1; min-width: 0; }
-  .preview-item .file-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .preview-item .file-status { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
-  .preview-item .file-status.uploading { color: #E8501A; }
-  .preview-item .file-status.done { color: #1A7A4A; }
-  .preview-item .file-status.error { color: #CC2200; }
-  .remove-file { background: none; border: none; cursor: pointer; color: var(--text-sub); font-size: 16px; flex-shrink: 0; padding: 2px; }
+  .file-icon { font-size: 20px; flex-shrink: 0; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-status { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+  .file-status.uploading { color: #E8501A; }
+  .file-status.done { color: #1A7A4A; }
+  .file-status.error { color: #CC2200; }
+  .remove-file { background: none; border: none; cursor: pointer; color: var(--text-sub); font-size: 16px; flex-shrink: 0; }
 
+  /* Flow badge */
   .flow-badge { display: flex; align-items: center; gap: 6px; background: var(--accent-light); border: 1px solid #F4C4B3; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: var(--accent); font-weight: 500; line-height: 1.5; }
 
+  /* Submit */
   .submit-btn { width: 100%; background: var(--accent); color: white; border: none; border-radius: var(--radius); padding: 18px; font-family: 'Noto Sans TC', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
   .submit-btn:active { transform: scale(0.98); opacity: 0.9; }
   .submit-btn:disabled { background: var(--border); color: var(--text-sub); cursor: not-allowed; transform: none; }
@@ -114,10 +117,10 @@
 <div class="header">
   <div class="header-top">
     <span class="logo">智互聯產品中心</span>
-    <div id="userInfo" style="display:none;">
+    <div id="headerUser" style="display:none;">
       <div class="user-info">
-        <img class="user-avatar" id="userAvatar" src="" alt="">
-        <span class="user-name" id="userName"></span>
+        <img class="user-avatar" id="headerAvatar" src="" alt="">
+        <span class="user-name" id="headerName"></span>
       </div>
     </div>
     <div class="status-dot" id="statusDot" style="display:none;"></div>
@@ -127,21 +130,17 @@
 
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
-  <div class="loading-text" id="loadingText">回報中，請稍候...</div>
+  <div class="loading-text" id="loadingText">初始化中...</div>
 </div>
 <div class="toast" id="toast"></div>
 
-<!-- 登入畫面 -->
-<div class="login-screen" id="loginScreen">
-  <div class="login-icon">🔐</div>
-  <h2>請先登入 Google 帳號</h2>
-  <p>登入後即可使用現場問題回報功能<br>附件將自動上傳至智聯雲倉雲端資料夾</p>
-  <button class="google-btn" onclick="signIn()">
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-    使用 Google 帳號登入
-  </button>
+<!-- 初始化畫面 -->
+<div class="init-screen" id="initScreen">
+  <div class="init-icon">⏳</div>
+  <p>載入中，請稍候...</p>
 </div>
 
+<!-- 主畫面 -->
 <div class="main" id="mainArea" style="display:none;">
 
   <!-- 成功畫面 -->
@@ -155,23 +154,19 @@
   <!-- 表單 -->
   <div id="formArea">
 
-    <!-- ① 顧問資訊 -->
+    <!-- ① 顧問資訊（LINE 自動帶入） -->
     <div class="card">
       <div class="card-title">顧問資訊</div>
-      <div class="field">
-        <label class="required">顧問姓名</label>
-        <select id="consultant">
-          <option value="">請選擇顧問</option>
-          <option value="REX">REX</option>
-          <option value="俊榮">俊榮</option>
-          <option value="美倫姐">美倫姐</option>
-          <option value="美月">美月</option>
-          <option value="兆惠">兆惠</option>
-          <option value="冠妡">冠妡</option>
-          <option value="怡人">怡人</option>
-          <option value="咏真">咏真</option>
-        </select>
+
+      <!-- LINE 使用者自動帶入 -->
+      <div class="line-user-card" id="lineUserCard">
+        <img id="lineAvatar" src="" alt="">
+        <div>
+          <div class="line-name" id="lineDisplayName">載入中...</div>
+          <div class="line-sub">LINE 帳號自動識別</div>
+        </div>
       </div>
+
       <div class="field">
         <label class="required">客戶名稱</label>
         <select id="client">
@@ -237,7 +232,7 @@
     <!-- ④ 附件上傳 -->
     <div class="card">
       <div class="card-title">附件（截圖／錄影）</div>
-      <div class="upload-zone" id="uploadZone">
+      <div class="upload-zone">
         <input type="file" id="fileInput" accept="image/*,video/*" multiple onchange="handleFiles(this.files)">
         <span class="upload-icon">📎</span>
         <div class="upload-text">點此選取截圖或錄影（可不填）<br><strong>支援 JPG、PNG、MP4、MOV</strong></div>
@@ -256,87 +251,77 @@
   </div>
 </div>
 
-<!-- Google Identity Services -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<!-- Google API Client -->
-<script src="https://apis.google.com/js/api.js"></script>
-
+<!-- LIFF SDK -->
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-  // ══════════════════════════════════════════
-  // 設定
-  // ══════════════════════════════════════════
-  const CLIENT_ID      = '701910642608-ts098dq2rqlf4uvk8vo4j9ngdc2p5jsh.apps.googleusercontent.com';
-  const FOLDER_ID      = '1Gw4vEWvaLLf4kJ5D7zx2yZGQMd7thAa-8I-JebnRDJmSz7Oqq727PQjsfpUE59OYNRSm4h9m';
+  const LIFF_ID         = '2010128014-rLRvQtc6';
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxgEtAj7ifD32k9sjY23TuebgQj0WjoF4kUGQJB_WVLgSAcOsOSzay4rKgAWBQsdMyNow/exec';
-  const SCOPES         = 'https://www.googleapis.com/auth/drive.file';
+  const DRIVE_FOLDER_ID = '1Gw4vEWvaLLf4kJ5D7zx2yZGQMd7thAa-8I-JebnRDJmSz7Oqq727PQjsfpUE59OYNRSm4h9m';
 
-  let accessToken  = null;
-  let tokenClient  = null;
-  const SELECTED   = {};
+  const SELECTED = {};
   let selectedFiles = [];
+  let lineProfile   = null;
+  let driveToken    = null;
 
-  // ── Google 登入 ──────────────────────────
-  function initGoogleAuth() {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: (resp) => {
-        if (resp.error) { showToast('登入失敗，請重試', true); return; }
-        accessToken = resp.access_token;
-        // 取得使用者資訊
-        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: 'Bearer ' + accessToken }
-        }).then(r => r.json()).then(info => {
-          document.getElementById('userAvatar').src = info.picture || '';
-          document.getElementById('userName').textContent = info.name || info.email || '';
-          document.getElementById('userInfo').style.display = 'block';
-          document.getElementById('statusDot').style.display = 'block';
-        });
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainArea').style.display = 'block';
+  // ── LIFF 初始化 ──────────────────────────
+  async function initLiff() {
+    try {
+      await liff.init({ liffId: LIFF_ID });
+
+      if (!liff.isLoggedIn()) {
+        liff.login({ redirectUri: location.href });
+        return;
       }
-    });
+
+      lineProfile = await liff.getProfile();
+
+      // Header 顯示
+      document.getElementById('headerAvatar').src = lineProfile.pictureUrl || '';
+      document.getElementById('headerName').textContent = lineProfile.displayName || '';
+      document.getElementById('headerUser').style.display = 'block';
+      document.getElementById('statusDot').style.display = 'block';
+
+      // 表單顯示
+      document.getElementById('lineAvatar').src = lineProfile.pictureUrl || '';
+      document.getElementById('lineDisplayName').textContent = lineProfile.displayName || '';
+
+      document.getElementById('initScreen').style.display = 'none';
+      document.getElementById('mainArea').style.display = 'block';
+
+    } catch(err) {
+      console.error('LIFF init error:', err);
+      // 非 LINE 環境（電腦測試用）：顯示主畫面並用預設名稱
+      lineProfile = { displayName: '測試顧問', pictureUrl: '', userId: 'test' };
+      document.getElementById('lineDisplayName').textContent = '測試顧問（非 LINE 環境）';
+      document.getElementById('initScreen').style.display = 'none';
+      document.getElementById('mainArea').style.display = 'block';
+    }
   }
 
-  function signIn() {
-    if (tokenClient) tokenClient.requestAccessToken();
-  }
-
-  window.addEventListener('load', () => {
-    // 等 GSI 載入
-    const check = setInterval(() => {
-      if (window.google && google.accounts) {
-        clearInterval(check);
-        initGoogleAuth();
-      }
-    }, 200);
-  });
-
-  // ── 附件選取 ─────────────────────────────
+  // ── 附件處理 ─────────────────────────────
   function handleFiles(files) {
     Array.from(files).forEach(file => {
-      if (selectedFiles.length >= 6) { showToast('最多選取 6 個附件', true); return; }
-      selectedFiles.push({ file, status: 'pending', driveUrl: '', driveId: '' });
-      renderFileItem(selectedFiles.length - 1);
+      if (selectedFiles.filter(Boolean).length >= 6) { showToast('最多選取 6 個附件', true); return; }
+      const idx = selectedFiles.length;
+      selectedFiles.push({ file, status: 'pending' });
+      renderFileItem(idx);
     });
     document.getElementById('fileInput').value = '';
   }
 
   function renderFileItem(idx) {
-    const list = document.getElementById('previewList');
-    const f    = selectedFiles[idx];
-    const isImg = f.file.type.startsWith('image/');
+    const f   = selectedFiles[idx];
     const el  = document.createElement('div');
     el.className = 'preview-item';
     el.id = 'file-item-' + idx;
     el.innerHTML =
-      '<span class="file-icon">' + (isImg ? '🖼️' : '🎬') + '</span>' +
+      '<span class="file-icon">' + (f.file.type.startsWith('image/') ? '🖼️' : '🎬') + '</span>' +
       '<div class="file-info">' +
         '<div class="file-name">' + f.file.name + '</div>' +
         '<div class="file-status" id="file-status-' + idx + '">待上傳</div>' +
       '</div>' +
       '<button class="remove-file" onclick="removeFile(' + idx + ')">✕</button>';
-    list.appendChild(el);
+    document.getElementById('previewList').appendChild(el);
   }
 
   function removeFile(idx) {
@@ -350,36 +335,44 @@
     if (el) { el.textContent = text; el.className = 'file-status ' + cls; }
   }
 
-  // ── 上傳單一檔案到 Drive ─────────────────
+  // ── 取得 Drive Token（透過 Apps Script 代理上傳）──
   async function uploadToDrive(file, idx) {
     setFileStatus(idx, '上傳中...', 'uploading');
-    const meta = JSON.stringify({ name: file.name, parents: [FOLDER_ID] });
-    const form = new FormData();
-    form.append('metadata', new Blob([meta], { type: 'application/json' }));
-    form.append('file', file);
-
-    const res = await fetch(
-      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',
-      { method: 'POST', headers: { Authorization: 'Bearer ' + accessToken }, body: form }
-    );
-    if (!res.ok) throw new Error('上傳失敗 ' + res.status);
-    const data = await res.json();
-
-    // 設定公開可檢視
-    await fetch('https://www.googleapis.com/drive/v3/files/' + data.id + '/permissions', {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: 'reader', type: 'anyone' })
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = e.target.result.split(',')[1];
+        try {
+          const res = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+              action:    'uploadFile',
+              fileName:  file.name,
+              mimeType:  file.type,
+              base64:    base64,
+              folderId:  DRIVE_FOLDER_ID,
+            })
+          });
+          const data = await res.json();
+          if (data.result === 'success') {
+            setFileStatus(idx, '✓ 上傳完成', 'done');
+            resolve({ name: file.name, url: data.url });
+          } else {
+            throw new Error(data.message || '上傳失敗');
+          }
+        } catch(err) {
+          setFileStatus(idx, '❌ 上傳失敗', 'error');
+          reject(err);
+        }
+      };
+      reader.readAsDataURL(file);
     });
-
-    setFileStatus(idx, '✓ 上傳完成', 'done');
-    return { name: data.name, url: data.webViewLink, id: data.id };
   }
 
   // ── 驗證 ─────────────────────────────────
   function validate() {
-    if (!document.getElementById('consultant').value) { showToast('請選擇顧問姓名', true); return false; }
-    if (!document.getElementById('client').value)     { showToast('請選擇客戶名稱', true); return false; }
+    if (!document.getElementById('client').value)       { showToast('請選擇客戶名稱', true); return false; }
     if (!document.getElementById('title').value.trim()) { showToast('請填寫問題摘要', true); return false; }
     if (!SELECTED['nature']) { showToast('請選擇問題性質', true); return false; }
     if (!SELECTED['urgent']) { showToast('請選擇緊急程度', true); return false; }
@@ -389,10 +382,9 @@
   // ── 送出 ─────────────────────────────────
   async function submitReport() {
     if (!validate()) return;
-    if (!accessToken) { showToast('請先登入 Google 帳號', true); return; }
     showLoading(true, '上傳附件中...');
 
-    // 上傳所有附件
+    // 上傳附件
     const validFiles = selectedFiles.filter(Boolean);
     const uploadResults = [];
     for (let i = 0; i < selectedFiles.length; i++) {
@@ -401,18 +393,16 @@
         const result = await uploadToDrive(selectedFiles[i].file, i);
         uploadResults.push(result);
       } catch(err) {
-        setFileStatus(i, '❌ 上傳失敗', 'error');
-        console.error(err);
+        console.error('附件上傳失敗:', err);
       }
     }
 
     setLoadingText('寫入系統中...');
 
-    const fileNames = uploadResults.map(r => r.name).join('、');
-    const fileLinks = uploadResults.map(r => r.url).join('\n');
-
     const payload = {
-      consultant:  document.getElementById('consultant').value,
+      action:      'saveReport',
+      consultant:  lineProfile ? lineProfile.displayName : '未知',
+      lineUserId:  lineProfile ? lineProfile.userId : '',
       client:      document.getElementById('client').value,
       title:       document.getElementById('title').value.trim(),
       nature:      SELECTED['nature'] || '',
@@ -420,8 +410,8 @@
       description: document.getElementById('description').value.trim(),
       urgent:      SELECTED['urgent'] || '',
       hasAttach:   uploadResults.length > 0 ? '是' : '否',
-      fileNames:   fileNames,
-      fileLinks:   fileLinks,
+      fileNames:   uploadResults.map(r => r.name).join('、'),
+      fileLinks:   uploadResults.map(r => r.url).join('\n'),
     };
 
     try {
@@ -430,12 +420,11 @@
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(payload),
       });
-
       showLoading(false);
-      const attachInfo = uploadResults.length > 0
-        ? '附件已上傳：' + fileNames
-        : '（無附件）';
-      document.getElementById('successMsg').textContent = '問題已記錄至系統｜' + attachInfo;
+      document.getElementById('successMsg').textContent =
+        uploadResults.length > 0
+          ? '問題已記錄至系統｜附件：' + uploadResults.map(r => r.name).join('、')
+          : '問題已記錄至系統（無附件）';
       showSuccess();
     } catch(err) {
       showLoading(false);
@@ -457,9 +446,7 @@
     document.getElementById('submitBtn').disabled = show;
     if (text) document.getElementById('loadingText').textContent = text;
   }
-  function setLoadingText(text) {
-    document.getElementById('loadingText').textContent = text;
-  }
+  function setLoadingText(t) { document.getElementById('loadingText').textContent = t; }
   function showSuccess() {
     document.getElementById('formArea').style.display = 'none';
     document.getElementById('successScreen').classList.add('show');
@@ -468,9 +455,7 @@
   function resetForm() {
     document.getElementById('successScreen').classList.remove('show');
     document.getElementById('formArea').style.display = 'block';
-    ['consultant','client','title','module','description'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
+    ['client','title','module','description'].forEach(id => document.getElementById(id).value = '');
     document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
     Object.keys(SELECTED).forEach(k => delete SELECTED[k]);
     selectedFiles = [];
@@ -484,6 +469,9 @@
     t.className = 'toast show' + (isError ? ' error' : '');
     setTimeout(() => t.classList.remove('show'), 3000);
   }
+
+  // 啟動
+  initLiff();
 </script>
 </body>
 </html>

@@ -147,7 +147,10 @@
   <div class="success-screen" id="successScreen">
     <div class="success-icon">✓</div>
     <h2>回報成功！</h2>
-    <p id="successMsg">問題已記錄至系統</p>
+    <p id="successMsg">問題已記錄至系統，通知已發送至群組</p>
+    <a id="groupBtn" href="https://line.me/R/ti/g/de7fe01f0a9c1eedca1cb126408b49eb" style="display:block;background:#06C755;color:white;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;text-decoration:none;margin-bottom:12px;text-align:center;">
+      📸 前往群組上傳附件
+    </a>
     <button class="reset-btn" onclick="resetForm()">繼續回報下一個問題</button>
   </div>
 
@@ -229,16 +232,7 @@
       </div>
     </div>
 
-    <!-- ④ 附件上傳 -->
-    <div class="card">
-      <div class="card-title">附件（截圖／錄影）</div>
-      <div class="upload-zone">
-        <input type="file" id="fileInput" accept="image/*,video/*" multiple onchange="handleFiles(this.files)">
-        <span class="upload-icon">📎</span>
-        <div class="upload-text">點此選取截圖或錄影（可不填）<br><strong>支援 JPG、PNG、MP4、MOV</strong></div>
-      </div>
-      <div class="preview-list" id="previewList"></div>
-    </div>
+
 
     <div class="flow-badge">
       <span>🔄</span>
@@ -274,24 +268,29 @@
       }
 
       lineProfile = await liff.getProfile();
+      // 只取 displayName 和 pictureUrl，不用 userId
+      lineProfile = {
+        displayName: lineProfile.displayName || '未知顧問',
+        pictureUrl:  lineProfile.pictureUrl  || '',
+      };
 
       // Header 顯示
-      document.getElementById('headerAvatar').src = lineProfile.pictureUrl || '';
-      document.getElementById('headerName').textContent = lineProfile.displayName || '';
+      document.getElementById('headerAvatar').src = lineProfile.pictureUrl;
+      document.getElementById('headerName').textContent = lineProfile.displayName;
       document.getElementById('headerUser').style.display = 'block';
       document.getElementById('statusDot').style.display = 'block';
 
       // 表單顯示
-      document.getElementById('lineAvatar').src = lineProfile.pictureUrl || '';
-      document.getElementById('lineDisplayName').textContent = lineProfile.displayName || '';
+      document.getElementById('lineAvatar').src = lineProfile.pictureUrl;
+      document.getElementById('lineDisplayName').textContent = lineProfile.displayName;
 
       document.getElementById('initScreen').style.display = 'none';
       document.getElementById('mainArea').style.display = 'block';
 
     } catch(err) {
       console.error('LIFF init error:', err);
-      // 非 LINE 環境（電腦測試用）：顯示主畫面並用預設名稱
-      lineProfile = { displayName: '測試顧問', pictureUrl: '', userId: 'test' };
+      // 非 LINE 環境（電腦測試用）
+      lineProfile = { displayName: '測試顧問', pictureUrl: '' };
       document.getElementById('lineDisplayName').textContent = '測試顧問（非 LINE 環境）';
       document.getElementById('initScreen').style.display = 'none';
       document.getElementById('mainArea').style.display = 'block';
@@ -299,76 +298,18 @@
   }
 
   // ── 附件處理 ─────────────────────────────
-  function handleFiles(files) {
-    Array.from(files).forEach(file => {
-      if (selectedFiles.filter(Boolean).length >= 6) { showToast('最多選取 6 個附件', true); return; }
-      const idx = selectedFiles.length;
-      selectedFiles.push({ file, status: 'pending' });
-      renderFileItem(idx);
-    });
-    document.getElementById('fileInput').value = '';
-  }
 
-  function renderFileItem(idx) {
-    const f   = selectedFiles[idx];
-    const el  = document.createElement('div');
-    el.className = 'preview-item';
-    el.id = 'file-item-' + idx;
-    el.innerHTML =
-      '<span class="file-icon">' + (f.file.type.startsWith('image/') ? '🖼️' : '🎬') + '</span>' +
-      '<div class="file-info">' +
-        '<div class="file-name">' + f.file.name + '</div>' +
-        '<div class="file-status" id="file-status-' + idx + '">待上傳</div>' +
-      '</div>' +
-      '<button class="remove-file" onclick="removeFile(' + idx + ')">✕</button>';
-    document.getElementById('previewList').appendChild(el);
-  }
 
-  function removeFile(idx) {
-    selectedFiles[idx] = null;
-    const el = document.getElementById('file-item-' + idx);
-    if (el) el.remove();
-  }
 
-  function setFileStatus(idx, text, cls) {
-    const el = document.getElementById('file-status-' + idx);
-    if (el) { el.textContent = text; el.className = 'file-status ' + cls; }
-  }
+
+
+
+
 
   // ── 取得 Drive Token（透過 Apps Script 代理上傳）──
-  async function uploadToDrive(file, idx) {
-    setFileStatus(idx, '上傳中...', 'uploading');
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64 = e.target.result.split(',')[1];
-        try {
-          const res = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({
-              action:    'uploadFile',
-              fileName:  file.name,
-              mimeType:  file.type,
-              base64:    base64,
-              folderId:  DRIVE_FOLDER_ID,
-            })
-          });
-          const data = await res.json();
-          if (data.result === 'success') {
-            setFileStatus(idx, '✓ 上傳完成', 'done');
-            resolve({ name: file.name, url: data.url });
-          } else {
-            throw new Error(data.message || '上傳失敗');
-          }
-        } catch(err) {
-          setFileStatus(idx, '❌ 上傳失敗', 'error');
-          reject(err);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  }
+
+
+
 
   // ── 驗證 ─────────────────────────────────
   function validate() {
@@ -382,49 +323,30 @@
   // ── 送出 ─────────────────────────────────
   async function submitReport() {
     if (!validate()) return;
-    showLoading(true, '上傳附件中...');
-
-    // 上傳附件
-    const validFiles = selectedFiles.filter(Boolean);
-    const uploadResults = [];
-    for (let i = 0; i < selectedFiles.length; i++) {
-      if (!selectedFiles[i]) continue;
-      try {
-        const result = await uploadToDrive(selectedFiles[i].file, i);
-        uploadResults.push(result);
-      } catch(err) {
-        console.error('附件上傳失敗:', err);
-      }
-    }
-
-    setLoadingText('寫入系統中...');
+    showLoading(true, '回報中...');
 
     const payload = {
-      action:      'saveReport',
       consultant:  lineProfile ? lineProfile.displayName : '未知',
-      lineUserId:  lineProfile ? lineProfile.userId : '',
+
       client:      document.getElementById('client').value,
       title:       document.getElementById('title').value.trim(),
       nature:      SELECTED['nature'] || '',
       module:      document.getElementById('module').value || '',
       description: document.getElementById('description').value.trim(),
       urgent:      SELECTED['urgent'] || '',
-      hasAttach:   uploadResults.length > 0 ? '是' : '否',
-      fileNames:   uploadResults.map(r => r.name).join('、'),
-      fileLinks:   uploadResults.map(r => r.url).join('\n'),
+      hasAttach:   '否',
+      fileNames:   '',
+      fileLinks:   '',
     };
 
     try {
       await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload),
+        body:    JSON.stringify(payload),
       });
       showLoading(false);
-      document.getElementById('successMsg').textContent =
-        uploadResults.length > 0
-          ? '問題已記錄至系統｜附件：' + uploadResults.map(r => r.name).join('、')
-          : '問題已記錄至系統（無附件）';
+      document.getElementById('successMsg').textContent = '問題已記錄至系統，通知已發送至群組';
       showSuccess();
     } catch(err) {
       showLoading(false);
@@ -458,8 +380,6 @@
     ['client','title','module','description'].forEach(id => document.getElementById(id).value = '');
     document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
     Object.keys(SELECTED).forEach(k => delete SELECTED[k]);
-    selectedFiles = [];
-    document.getElementById('previewList').innerHTML = '';
     document.getElementById('submitBtn').disabled = false;
     window.scrollTo(0, 0);
   }

@@ -412,16 +412,16 @@
     window.scrollTo(0, 0);
   }
   function closeAndGoGroup() {
-    // 顯示提示，引導顧問手動關閉並前往群組
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;display:flex;align-items:center;justify-content:center;padding:24px;';
-    overlay.innerHTML = '<div style="background:white;border-radius:16px;padding:28px 24px;text-align:center;max-width:320px;">' +
-      '<div style="font-size:40px;margin-bottom:12px;">📸</div>' +
-      '<h3 style="font-size:18px;font-weight:700;margin-bottom:10px;color:#1A1A2E;">前往群組傳附件</h3>' +
-      '<p style="font-size:14px;color:#6B6B6B;line-height:1.6;margin-bottom:20px;">請點左上角 ✕ 關閉此頁面<br>回到 LINE 後進入<br><strong style="color:#1A1A2E;">【WMS智聯雲倉群組】</strong><br>傳送截圖或錄影</p>' +
-      '<button onclick="this.parentElement.parentElement.remove()" style="background:#1A1A2E;color:white;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;">知道了</button>' +
-      '</div>';
-    document.body.appendChild(overlay);
+    try {
+      if (liff.isInClient()) {
+        liff.closeWindow();
+      } else {
+        showToast('請回到 LINE 群組傳送附件', false);
+      }
+    } catch(err) {
+      // 若 closeWindow 失敗，顯示提示
+      showToast('請手動關閉此頁面，回到群組傳送附件', false);
+    }
   }
 
   function showToast(msg, isError) {

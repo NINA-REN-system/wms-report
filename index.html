@@ -148,8 +148,8 @@
     <div class="success-icon">✓</div>
     <h2>回報成功！</h2>
     <p id="successMsg">問題已記錄至系統，通知已發送至群組</p>
-    <button onclick="closeAndGoGroup()" style="display:block;width:100%;background:#06C755;color:white;border:none;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;text-align:center;">
-      📸 關閉並前往群組傳附件
+    <button id="attachGuideBtn" onclick="closeAndGoGroup()" style="display:none;width:100%;background:#06C755;color:white;border:none;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;text-align:center;">
+      📸 前往群組上傳附件
     </button>
     <button class="reset-btn" onclick="resetForm()">繼續回報下一個問題</button>
   </div>
@@ -234,9 +234,22 @@
 
 
 
+    <!-- ④ 是否有附件 -->
+    <div class="card">
+      <div class="card-title">是否有附件</div>
+      <div class="tag-grid tag-grid-2">
+        <button class="tag-btn normal selected" data-group="attach" data-value="否" onclick="selectAttach(this)">
+          <span class="tag-icon">📋</span>否<br><small style="font-weight:400;font-size:11px">無截圖或錄影</small>
+        </button>
+        <button class="tag-btn" data-group="attach" data-value="是" onclick="selectAttach(this)">
+          <span class="tag-icon">📸</span>是<br><small style="font-weight:400;font-size:11px">有截圖或錄影</small>
+        </button>
+      </div>
+    </div>
+
     <div class="flow-badge">
       <span>🔄</span>
-      <span>送出後資料自動寫入系統，附件同步上傳至智聯雲倉雲端資料夾</span>
+      <span>送出後資料自動寫入系統，通知已發送至群組</span>
     </div>
 
     <button class="submit-btn" id="submitBtn" onclick="submitReport()">
@@ -334,7 +347,7 @@
       module:      document.getElementById('module').value || '',
       description: document.getElementById('description').value.trim(),
       urgent:      SELECTED['urgent'] || '',
-      hasAttach:   '否',
+      hasAttach:   hasAttachValue,
       fileNames:   '',
       fileLinks:   '',
     };
@@ -347,6 +360,9 @@
       });
       showLoading(false);
       document.getElementById('successMsg').textContent = '問題已記錄至系統，通知已發送至群組';
+      // 依附件狀態決定按鈕顯示
+      const attachBtn = document.getElementById('attachGuideBtn');
+      if (attachBtn) attachBtn.style.display = hasAttachValue === '是' ? 'block' : 'none';
       showSuccess();
     } catch(err) {
       showLoading(false);
@@ -360,6 +376,14 @@
     document.querySelectorAll('[data-group="' + group + '"]').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     SELECTED[group] = btn.dataset.value;
+  }
+
+  let hasAttachValue = '否'; // 預設為否
+
+  function selectAttach(btn) {
+    document.querySelectorAll('[data-group="attach"]').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    hasAttachValue = btn.dataset.value;
   }
 
   // ── UI ───────────────────────────────────
@@ -381,15 +405,23 @@
     document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
     Object.keys(SELECTED).forEach(k => delete SELECTED[k]);
     document.getElementById('submitBtn').disabled = false;
+    // 重置附件狀態為否
+    hasAttachValue = '否';
+    document.querySelectorAll('[data-group="attach"]').forEach(b => b.classList.remove('selected'));
+    document.querySelector('[data-group="attach"][data-value="否"]').classList.add('selected');
     window.scrollTo(0, 0);
   }
   function closeAndGoGroup() {
-    // 關閉 LIFF 回到 LINE，顧問再自行前往群組傳附件
-    if (liff.isInClient()) {
-      liff.closeWindow();
-    } else {
-      showToast('請回到 LINE 群組傳送附件', false);
-    }
+    // 顯示提示，引導顧問手動關閉並前往群組
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;display:flex;align-items:center;justify-content:center;padding:24px;';
+    overlay.innerHTML = '<div style="background:white;border-radius:16px;padding:28px 24px;text-align:center;max-width:320px;">' +
+      '<div style="font-size:40px;margin-bottom:12px;">📸</div>' +
+      '<h3 style="font-size:18px;font-weight:700;margin-bottom:10px;color:#1A1A2E;">前往群組傳附件</h3>' +
+      '<p style="font-size:14px;color:#6B6B6B;line-height:1.6;margin-bottom:20px;">請點左上角 ✕ 關閉此頁面<br>回到 LINE 後進入<br><strong style="color:#1A1A2E;">【WMS智聯雲倉群組】</strong><br>傳送截圖或錄影</p>' +
+      '<button onclick="this.parentElement.parentElement.remove()" style="background:#1A1A2E;color:white;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;">知道了</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
   }
 
   function showToast(msg, isError) {

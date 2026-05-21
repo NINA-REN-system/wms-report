@@ -148,9 +148,9 @@
     <div class="success-icon">✓</div>
     <h2>回報成功！</h2>
     <p id="successMsg">問題已記錄至系統，通知已發送至群組</p>
-    <a id="groupBtn" href="https://line.me/R/ti/g/de7fe01f0a9c1eedca1cb126408b49eb" style="display:block;background:#06C755;color:white;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;text-decoration:none;margin-bottom:12px;text-align:center;">
-      📸 前往群組上傳附件
-    </a>
+    <button onclick="closeAndGoGroup()" style="display:block;width:100%;background:#06C755;color:white;border:none;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;text-align:center;">
+      📸 關閉並前往群組傳附件
+    </button>
     <button class="reset-btn" onclick="resetForm()">繼續回報下一個問題</button>
   </div>
 
@@ -383,6 +383,15 @@
     document.getElementById('submitBtn').disabled = false;
     window.scrollTo(0, 0);
   }
+  function closeAndGoGroup() {
+    // 關閉 LIFF 回到 LINE，顧問再自行前往群組傳附件
+    if (liff.isInClient()) {
+      liff.closeWindow();
+    } else {
+      showToast('請回到 LINE 群組傳送附件', false);
+    }
+  }
+
   function showToast(msg, isError) {
     const t = document.getElementById('toast');
     t.textContent = msg;

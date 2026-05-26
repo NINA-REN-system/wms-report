@@ -135,11 +135,15 @@
 <div class="toast" id="toast"></div>
 
 <!-- 客戶選單 -->
-<div id="clientOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:flex-end;justify-content:center;" onclick="closeClientPicker()">
-  <div style="background:white;border-radius:20px 20px 0 0;width:100%;padding:20px;max-height:60vh;overflow-y:auto;" onclick="event.stopPropagation()">
+<div id="clientOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:flex-end;justify-content:center;">
+  <div style="background:white;border-radius:20px 20px 0 0;width:100%;padding:20px;max-height:60vh;overflow-y:auto;">
     <div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:16px;font-weight:500;">選擇客戶</div>
-    <div id="clientList"></div>
-    <button onclick="closeClientPicker()" style="width:100%;margin-top:12px;padding:14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:white;font-size:15px;color:var(--text-sub);font-family:inherit;cursor:pointer;">取消</button>
+    <div id="clientList">
+      <button type="button" onclick="selectClientValue('永勝')" style="display:block;width:100%;padding:16px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font-size:16px;font-family:inherit;cursor:pointer;text-align:left;">🏭 永勝</button>
+      <button type="button" onclick="selectClientValue('泰碩')" style="display:block;width:100%;padding:16px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font-size:16px;font-family:inherit;cursor:pointer;text-align:left;">🏭 泰碩</button>
+      <button type="button" onclick="selectClientValue('東元')" style="display:block;width:100%;padding:16px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font-size:16px;font-family:inherit;cursor:pointer;text-align:left;">🏭 東元</button>
+    </div>
+    <button type="button" onclick="closeClientPicker()" style="width:100%;margin-top:12px;padding:14px;border:1.5px solid var(--border);border-radius:12px;background:white;font-size:15px;color:var(--text-sub);font-family:inherit;cursor:pointer;">取消</button>
   </div>
 </div>
 
@@ -383,18 +387,15 @@
   // ✏️ 新增客戶：在上方陣列加入名稱即可
 
   function openClientPicker() {
-    const list = document.getElementById('clientList');
-    list.innerHTML = '';
-    CLIENTS.forEach(name => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = '🏭 ' + name;
-      btn.style.cssText = 'display:block;width:100%;padding:14px 16px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:' + (document.getElementById('client').value === name ? 'var(--accent-light)' : 'var(--bg)') + ';color:' + (document.getElementById('client').value === name ? 'var(--accent)' : 'var(--text)') + ';font-size:15px;font-family:inherit;cursor:pointer;text-align:left;border-color:' + (document.getElementById('client').value === name ? 'var(--accent)' : 'var(--border)') + ';';
-      btn.onclick = () => selectClientValue(name);
-      list.appendChild(btn);
+    // 更新已選狀態顏色
+    const current = document.getElementById('client').value;
+    document.querySelectorAll('#clientList button').forEach(btn => {
+      const name = btn.textContent.replace('🏭 ', '').trim();
+      btn.style.background    = name === current ? 'var(--accent-light)' : 'var(--bg)';
+      btn.style.color         = name === current ? 'var(--accent)' : 'var(--text)';
+      btn.style.borderColor   = name === current ? 'var(--accent)' : 'var(--border)';
     });
-    const overlay = document.getElementById('clientOverlay');
-    overlay.style.display = 'flex';
+    document.getElementById('clientOverlay').style.display = 'flex';
   }
 
   function selectClientValue(name) {

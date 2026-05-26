@@ -107,6 +107,23 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { color: white; font-size: 14px; font-weight: 500; }
 
+  .client-opt {
+    display:block; width:100%; padding:16px; margin-bottom:8px;
+    border:1.5px solid var(--border); border-radius:12px;
+    background:var(--bg); color:var(--text); font-size:16px;
+    cursor:pointer; text-align:left; user-select:none;
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+  }
+  .client-opt.selected {
+    background:var(--accent-light); color:var(--accent); border-color:var(--accent);
+  }
+  .client-cancel {
+    width:100%; margin-top:12px; padding:14px;
+    border:1.5px solid var(--border); border-radius:12px;
+    background:white; font-size:15px; color:var(--text-sub);
+    cursor:pointer; text-align:center; user-select:none;
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+  }
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--primary); color: white; padding: 12px 20px; border-radius: 100px; font-size: 13px; font-weight: 500; transition: transform 0.3s ease; z-index: 300; white-space: nowrap; }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.error { background: #CC2200; }
@@ -139,11 +156,11 @@
   <div style="background:white;border-radius:20px 20px 0 0;width:100%;padding:20px;max-height:60vh;overflow-y:auto;">
     <div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:16px;font-weight:500;">選擇客戶</div>
     <div id="clientList">
-      <button type="button" onclick="selectClientValue('永勝')" style="display:block;width:100%;padding:16px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font-size:16px;font-family:inherit;cursor:pointer;text-align:left;">🏭 永勝</button>
-      <button type="button" onclick="selectClientValue('泰碩')" style="display:block;width:100%;padding:16px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font-size:16px;font-family:inherit;cursor:pointer;text-align:left;">🏭 泰碩</button>
-      <button type="button" onclick="selectClientValue('東元')" style="display:block;width:100%;padding:16px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);font-size:16px;font-family:inherit;cursor:pointer;text-align:left;">🏭 東元</button>
+      <div data-client="永勝" class="client-opt">🏭 永勝</div>
+      <div data-client="泰碩" class="client-opt">🏭 泰碩</div>
+      <div data-client="東元" class="client-opt">🏭 東元</div>
     </div>
-    <button type="button" onclick="closeClientPicker()" style="width:100%;margin-top:12px;padding:14px;border:1.5px solid var(--border);border-radius:12px;background:white;font-size:15px;color:var(--text-sub);font-family:inherit;cursor:pointer;">取消</button>
+    <div id="clientCancelBtn" class="client-cancel">取消</div>
   </div>
 </div>
 
@@ -387,15 +404,30 @@
   // ✏️ 新增客戶：在上方陣列加入名稱即可
 
   function openClientPicker() {
-    // 更新已選狀態顏色
     const current = document.getElementById('client').value;
-    document.querySelectorAll('#clientList button').forEach(btn => {
-      const name = btn.textContent.replace('🏭 ', '').trim();
-      btn.style.background    = name === current ? 'var(--accent-light)' : 'var(--bg)';
-      btn.style.color         = name === current ? 'var(--accent)' : 'var(--text)';
-      btn.style.borderColor   = name === current ? 'var(--accent)' : 'var(--border)';
+    document.querySelectorAll('.client-opt').forEach(el => {
+      el.classList.toggle('selected', el.dataset.client === current);
     });
     document.getElementById('clientOverlay').style.display = 'flex';
+  }
+
+  // 用 touchstart + click 雙重綁定，確保所有裝置都能觸發
+  function bindClientEvents() {
+    document.querySelectorAll('.client-opt').forEach(el => {
+      ['touchstart','click'].forEach(evt => {
+        el.addEventListener(evt, function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          selectClientValue(this.dataset.client);
+        }, { passive: false });
+      });
+    });
+    ['touchstart','click'].forEach(evt => {
+      document.getElementById('clientCancelBtn').addEventListener(evt, function(e) {
+        e.preventDefault();
+        closeClientPicker();
+      }, { passive: false });
+    });
   }
 
   function selectClientValue(name) {
@@ -477,6 +509,7 @@
 
   // 啟動
   initLiff();
+  bindClientEvents();
 </script>
 </body>
 </html>

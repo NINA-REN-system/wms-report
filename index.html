@@ -134,6 +134,15 @@
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- 客戶選單 -->
+<div id="clientOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:flex-end;justify-content:center;" onclick="closeClientPicker()">
+  <div style="background:white;border-radius:20px 20px 0 0;width:100%;padding:20px;max-height:60vh;overflow-y:auto;" onclick="event.stopPropagation()">
+    <div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:16px;font-weight:500;">選擇客戶</div>
+    <div id="clientList"></div>
+    <button onclick="closeClientPicker()" style="width:100%;margin-top:12px;padding:14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:white;font-size:15px;color:var(--text-sub);font-family:inherit;cursor:pointer;">取消</button>
+  </div>
+</div>
+
 <!-- 初始化畫面 -->
 <div class="init-screen" id="initScreen">
   <div class="init-icon">⏳</div>
@@ -172,17 +181,10 @@
 
       <div class="field">
         <label class="required">客戶名稱</label>
-        <div style="position:relative;">
-          <select id="client" size="1" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;z-index:2;">
-            <option value="">請選擇客戶</option>
-            <option value="永勝">永勝</option>
-            <option value="泰碩">泰碩</option>
-            <option value="東元">東元</option>
-          </select>
-          <div id="clientDisplay" onclick="document.getElementById('client').focus()" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 36px 12px 14px;font-size:15px;color:var(--text-sub);cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B6B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;">
-            請選擇客戶
-          </div>
-        </div>
+        <input type="hidden" id="client" value="">
+        <button type="button" id="clientBtn" onclick="openClientPicker()" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 36px 12px 14px;font-size:15px;color:var(--text-sub);cursor:pointer;text-align:left;font-family:inherit;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B6B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;" id="clientDisplay">
+          請選擇客戶
+        </button>
       </div>
     </div>
 
@@ -376,6 +378,38 @@
   }
 
   // ── Tag ──────────────────────────────────
+  // ── 客戶選單（自訂彈出，不用 select）─────────
+  const CLIENTS = ['永勝', '泰碩', '東元'];
+  // ✏️ 新增客戶：在上方陣列加入名稱即可
+
+  function openClientPicker() {
+    const list = document.getElementById('clientList');
+    list.innerHTML = '';
+    CLIENTS.forEach(name => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = '🏭 ' + name;
+      btn.style.cssText = 'display:block;width:100%;padding:14px 16px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:' + (document.getElementById('client').value === name ? 'var(--accent-light)' : 'var(--bg)') + ';color:' + (document.getElementById('client').value === name ? 'var(--accent)' : 'var(--text)') + ';font-size:15px;font-family:inherit;cursor:pointer;text-align:left;border-color:' + (document.getElementById('client').value === name ? 'var(--accent)' : 'var(--border)') + ';';
+      btn.onclick = () => selectClientValue(name);
+      list.appendChild(btn);
+    });
+    const overlay = document.getElementById('clientOverlay');
+    overlay.style.display = 'flex';
+  }
+
+  function selectClientValue(name) {
+    document.getElementById('client').value = name;
+    const display = document.getElementById('clientDisplay');
+    display.textContent = name;
+    display.style.color = 'var(--text)';
+    display.style.borderColor = 'var(--accent)';
+    closeClientPicker();
+  }
+
+  function closeClientPicker() {
+    document.getElementById('clientOverlay').style.display = 'none';
+  }
+
   function selectTag(btn) {
     const group = btn.dataset.group;
     document.querySelectorAll('[data-group="' + group + '"]').forEach(b => b.classList.remove('selected'));
@@ -408,8 +442,8 @@
     document.getElementById('formArea').style.display = 'block';
     ['title','module','description'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('client').value = '';
-    const cd = document.getElementById('clientDisplay');
-    if (cd) { cd.textContent = '請選擇客戶'; cd.style.color = 'var(--text-sub)'; cd.style.borderColor = 'var(--border)'; }
+    const clientBtn = document.getElementById('clientDisplay');
+    if (clientBtn) { clientBtn.textContent = '請選擇客戶'; clientBtn.style.color = 'var(--text-sub)'; clientBtn.style.borderColor = 'var(--border)'; }
     document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
     Object.keys(SELECTED).forEach(k => delete SELECTED[k]);
     document.getElementById('submitBtn').disabled = false;
@@ -439,20 +473,6 @@
     setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  // select 變更時更新顯示文字
-  document.addEventListener('DOMContentLoaded', () => {
-    const sel = document.getElementById('client');
-    if (sel) {
-      sel.addEventListener('change', () => {
-        const display = document.getElementById('clientDisplay');
-        if (display) {
-          display.textContent = sel.value || '請選擇客戶';
-          display.style.color = sel.value ? 'var(--text)' : 'var(--text-sub)';
-          display.style.borderColor = sel.value ? 'var(--accent)' : 'var(--border)';
-        }
-      });
-    }
-  });
 
   // 啟動
   initLiff();

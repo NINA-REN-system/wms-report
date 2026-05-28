@@ -107,6 +107,23 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { color: white; font-size: 14px; font-weight: 500; }
 
+  .client-opt {
+    display:block; width:100%; padding:16px; margin-bottom:8px;
+    border:1.5px solid var(--border); border-radius:12px;
+    background:var(--bg); color:var(--text); font-size:16px;
+    cursor:pointer; text-align:left; user-select:none;
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+  }
+  .client-opt.selected {
+    background:var(--accent-light); color:var(--accent); border-color:var(--accent);
+  }
+  .client-cancel {
+    width:100%; margin-top:12px; padding:14px;
+    border:1.5px solid var(--border); border-radius:12px;
+    background:white; font-size:15px; color:var(--text-sub);
+    cursor:pointer; text-align:center; user-select:none;
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+  }
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--primary); color: white; padding: 12px 20px; border-radius: 100px; font-size: 13px; font-weight: 500; transition: transform 0.3s ease; z-index: 300; white-space: nowrap; }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.error { background: #CC2200; }
@@ -148,9 +165,16 @@
     <div class="success-icon">✓</div>
     <h2>回報成功！</h2>
     <p id="successMsg">問題已記錄至系統，通知已發送至群組</p>
-    <button id="attachGuideBtn" onclick="closeAndGoGroup()" style="display:none;width:100%;background:#06C755;color:white;border:none;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;text-align:center;">
-      📸 前往群組上傳附件
-    </button>
+    <div id="attachGuideBtn" style="display:none;margin-bottom:16px;">
+      <button onclick="closeAndGoGroup()" style="width:100%;background:#06C755;color:white;border:none;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;text-align:center;">
+        📸 前往群組上傳附件
+      </button>
+      <div style="background:white;border-radius:var(--radius);border:1px solid var(--border);padding:16px;text-align:center;">
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:10px;">📱 或掃描 QR Code 進入群組</div>
+        <img src="https://nina-ren-system.github.io/wms-report/group-qr.jpg" alt="群組QR Code" style="width:180px;height:180px;object-fit:contain;border-radius:8px;">
+        <div style="font-size:11px;color:var(--text-sub);margin-top:8px;">WMS智聯雲倉群組</div>
+      </div>
+    </div>
     <button class="reset-btn" onclick="resetForm()">繼續回報下一個問題</button>
   </div>
 
@@ -172,12 +196,17 @@
 
       <div class="field">
         <label class="required">客戶名稱</label>
-        <select id="client">
-          <option value="">請選擇客戶</option>
-          <option value="永勝光學股">永勝光學股</option>
-          <option value="泰碩電子股">泰碩電子股</option>
-          <option value="東元電機股">東元電機股</option>
-        </select>
+        <div class="tag-grid" style="grid-template-columns:1fr 1fr 1fr;">
+          <button class="tag-btn" data-group="client" data-value="永勝" onclick="selectTag(this)">
+            <span class="tag-icon">🏭</span>永勝
+          </button>
+          <button class="tag-btn" data-group="client" data-value="泰碩" onclick="selectTag(this)">
+            <span class="tag-icon">🏭</span>泰碩
+          </button>
+          <button class="tag-btn" data-group="client" data-value="東元" onclick="selectTag(this)">
+            <span class="tag-icon">🏭</span>東元
+          </button>
+        </div>
       </div>
     </div>
 
@@ -341,7 +370,7 @@
     const payload = {
       consultant:  lineProfile ? lineProfile.displayName : '未知',
 
-      client:      document.getElementById('client').value,
+      client:      SELECTED['client'] || '',
       title:       document.getElementById('title').value.trim(),
       nature:      SELECTED['nature'] || '',
       module:      document.getElementById('module').value || '',
@@ -371,6 +400,16 @@
   }
 
   // ── Tag ──────────────────────────────────
+  // ── 客戶選單（自訂彈出，不用 select）─────────
+
+
+  // 用 touchstart + click 雙重綁定，確保所有裝置都能觸發
+
+
+
+
+
+
   function selectTag(btn) {
     const group = btn.dataset.group;
     document.querySelectorAll('[data-group="' + group + '"]').forEach(b => b.classList.remove('selected'));
@@ -401,7 +440,8 @@
   function resetForm() {
     document.getElementById('successScreen').classList.remove('show');
     document.getElementById('formArea').style.display = 'block';
-    ['client','title','module','description'].forEach(id => document.getElementById(id).value = '');
+    ['title','module','description'].forEach(id => document.getElementById(id).value = '');
+    // client 由 SELECTED 管理，tag-btn 統一在下方清除
     document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
     Object.keys(SELECTED).forEach(k => delete SELECTED[k]);
     document.getElementById('submitBtn').disabled = false;
@@ -430,6 +470,7 @@
     t.className = 'toast show' + (isError ? ' error' : '');
     setTimeout(() => t.classList.remove('show'), 3000);
   }
+
 
   // 啟動
   initLiff();

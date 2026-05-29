@@ -166,13 +166,13 @@
     <h2>回報成功！</h2>
     <p id="successMsg">問題已記錄至系統，通知已發送至群組</p>
     <div id="attachGuideBtn" style="display:none;margin-bottom:16px;">
-      <a href="https://line.me/R/ti/g/MFsJNFwznp" style="display:block;width:100%;background:#06C755;color:white;text-decoration:none;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;margin-bottom:12px;text-align:center;box-sizing:border-box;">
+      <a id="attachGroupLink" href="#" style="display:block;width:100%;background:#06C755;color:white;text-decoration:none;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;margin-bottom:12px;text-align:center;box-sizing:border-box;">
         📸 前往群組上傳附件
       </a>
       <div style="background:white;border-radius:var(--radius);border:1px solid var(--border);padding:16px;text-align:center;">
         <div style="font-size:13px;color:var(--text-sub);margin-bottom:10px;">📱 或掃描 QR Code 進入群組</div>
-        <img src="https://nina-ren-system.github.io/wms-report/group-qr.jpg" alt="群組QR Code" style="width:180px;height:180px;object-fit:contain;border-radius:8px;">
-        <div style="font-size:11px;color:var(--text-sub);margin-top:8px;">WMS智聯雲倉群組</div>
+        <img id="attachGroupQR" src="" alt="群組QR Code" style="width:180px;height:180px;object-fit:contain;border-radius:8px;">
+        <div id="attachGroupName" style="font-size:11px;color:var(--text-sub);margin-top:8px;"></div>
       </div>
     </div>
     <button class="reset-btn" onclick="resetForm()">繼續回報下一個問題</button>
@@ -506,8 +506,33 @@
       });
       showLoading(false);
       document.getElementById('successMsg').textContent = '問題已記錄至系統，通知已發送至群組';
+
+      // 依產品線 + SRM服務 決定附件群組連結
       const attachBtn = document.getElementById('attachGuideBtn');
-      if (attachBtn) attachBtn.style.display = hasAttachValue === '是' ? 'block' : 'none';
+      if (attachBtn && hasAttachValue === '是') {
+        const pl      = SELECTED['productLine'] || '';
+        const service = (document.getElementById('srmService') ? document.getElementById('srmService').value : '').trim();
+
+        // 群組設定
+        const GROUP_WMS = { url: 'https://line.me/R/ti/g/MFsJNFwznp', qr: 'https://nina-ren-system.github.io/wms-report/group-qr.jpg', name: 'WMS 智聯雲倉群組' };
+        const GROUP_黃  = { url: 'https://line.me/R/ti/g/znKHY2fyTJ', qr: 'srm-qr-huang.png', name: 'SRM 黃愛媜群組' };
+        const GROUP_王  = { url: 'https://line.me/R/ti/g/ZZxq3bAJpL',            qr: 'srm-qr-wang.png', name: 'SRM 王文杰群組' };
+
+        let group = GROUP_WMS; // 預設雲倉
+        if (pl === 'SRM') {
+          if (service === '王文杰')      group = GROUP_王;
+          else if (service === '黃愛媜') group = GROUP_黃;
+          else                           group = GROUP_黃; // SRM 預設黃愛媜
+        }
+
+        document.getElementById('attachGroupLink').href = group.url;
+        document.getElementById('attachGroupQR').src    = group.qr;
+        document.getElementById('attachGroupName').textContent = group.name;
+        attachBtn.style.display = 'block';
+      } else if (attachBtn) {
+        attachBtn.style.display = 'none';
+      }
+
       showSuccess();
     } catch(err) {
       showLoading(false);

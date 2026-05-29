@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
-<title>智聯雲倉｜現場問題回報</title>
+<title>雲倉/SRM｜現場問題回報</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -133,7 +133,7 @@
 
 <div class="header">
   <div class="header-top">
-    <span class="logo">智互聯產品中心</span>
+    <span class="logo">智物流交付部</span>
     <div id="headerUser" style="display:none;">
       <div class="user-info">
         <img class="user-avatar" id="headerAvatar" src="" alt="">
@@ -142,7 +142,7 @@
     </div>
     <div class="status-dot" id="statusDot" style="display:none;"></div>
   </div>
-  <h1>智聯雲倉<span>｜</span>現場回報</h1>
+  <h1>雲倉/SRM<span>｜</span>現場回報</h1>
 </div>
 
 <div class="loading-overlay" id="loadingOverlay">
@@ -194,14 +194,31 @@
         </div>
       </div>
 
+      <!-- 產品線選擇 -->
       <div class="field">
-        <label class="required">客戶名稱</label>
-        <select id="client">
-          <option value="">請選擇客戶</option>
-          <option value="永勝光學股">永勝光學股</option>
-          <option value="泰碩電子股">泰碩電子股</option>
-          <option value="東元電機股">東元電機股</option>
-        </select>
+        <label class="required">產品線</label>
+        <div class="tag-grid tag-grid-2">
+          <button class="tag-btn" data-group="productLine" data-value="智聯雲倉" onclick="selectProductLine(this)">
+            <span class="tag-icon">🏭</span>智聯雲倉
+          </button>
+          <button class="tag-btn" data-group="productLine" data-value="SRM" onclick="selectProductLine(this)">
+            <span class="tag-icon">🔗</span>SRM
+          </button>
+        </div>
+      </div>
+
+      <!-- 客戶名稱 + SRM服務 -->
+      <div style="display:flex; gap:8px; align-items:flex-start;">
+        <div class="field" style="flex:1; margin-bottom:0;">
+          <label class="required">客戶名稱</label>
+          <select id="client" onchange="onClientChange()">
+            <option value="">請先選擇產品線</option>
+          </select>
+        </div>
+        <div class="field" id="srmServiceField" style="flex:1; margin-bottom:0; display:none;">
+          <label>服務</label>
+          <input type="text" id="srmService" placeholder="自動帶入" readonly style="background:#f0f0f0; color:var(--text-sub);">
+        </div>
       </div>
     </div>
 
@@ -289,10 +306,20 @@
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxgEtAj7ifD32k9sjY23TuebgQj0WjoF4kUGQJB_WVLgSAcOsOSzay4rKgAWBQsdMyNow/exec';
   const DRIVE_FOLDER_ID = '1Gw4vEWvaLLf4kJ5D7zx2yZGQMd7thAa-8I-JebnRDJmSz7Oqq727PQjsfpUE59OYNRSm4h9m';
 
+  // Google Sheets 客戶資料
+  const SHEET_ID = '1gNCYumiQ-wcY8w6b-TBOU5XBFyp9OYx95cSkJDYNIZc';
+  // 雲倉：物流-專案進度表 gid=1610781877
+  // SRM：請到試算表點 SRM-專案進度表，網址列取 gid= 後的數字填入
+  const WMS_SHEET_GID = '1610781877';
+  const SRM_SHEET_GID = '0'; // ← 請修改為 SRM-專案進度表的實際 gid
+
   const SELECTED = {};
   let selectedFiles = [];
   let lineProfile   = null;
   let driveToken    = null;
+  let wmsClients    = []; // [{name}]
+  let srmClients    = []; // [{name, service}]
+  let currentProductLine = ''; // 'SRM' or '智聯雲倉'
 
   // ── LIFF 初始化 ──────────────────────────
   async function initLiff() {
@@ -323,6 +350,7 @@
 
       document.getElementById('initScreen').style.display = 'none';
       document.getElementById('mainArea').style.display = 'block';
+      loadClients();
 
     } catch(err) {
       console.error('LIFF init error:', err);
@@ -331,25 +359,131 @@
       document.getElementById('lineDisplayName').textContent = '測試顧問（非 LINE 環境）';
       document.getElementById('initScreen').style.display = 'none';
       document.getElementById('mainArea').style.display = 'block';
+      loadClients();
     }
   }
 
   // ── 附件處理 ─────────────────────────────
 
-
-
-
-
-
-
-
   // ── 取得 Drive Token（透過 Apps Script 代理上傳）──
 
+  // ── 客戶資料從 Google Sheets 載入 ────────────
+  async function loadClients() {
+    try {
+      // 讀取雲倉客戶（物流-專案進度表）
+      const wmsUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${WMS_SHEET_GID}`;
+      const wmsRes = await fetch(wmsUrl);
+      const wmsCsv = await wmsRes.text();
+      wmsClients = parseWmsClients(wmsCsv);
 
+      // 讀取SRM客戶（SRM-專案進度表）
+      const srmUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SRM_SHEET_GID}`;
+      const srmRes = await fetch(srmUrl);
+      const srmCsv = await srmRes.text();
+      srmClients = parseSrmClients(srmCsv);
+    } catch(err) {
+      console.error('載入客戶資料失敗:', err);
+      // fallback: 舊有靜態資料
+      wmsClients = [{name:'永勝'},{name:'泰碩'},{name:'東元'}];
+      srmClients = [];
+    }
+  }
+
+  function parseCsvLine(line) {
+    const result = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    result.push(cur.trim());
+    return result;
+  }
+
+  function parseWmsClients(csv) {
+    const lines = csv.split('\n').filter(l => l.trim());
+    if (lines.length < 2) return [];
+    const headers = parseCsvLine(lines[0]).map(h => h.replace(/^"|"$/g,'').trim());
+    const productLineIdx = headers.findIndex(h => h.includes('產品線'));
+    const clientIdx = headers.findIndex(h => h.includes('客戶') || h.includes('公司') || h.includes('名稱'));
+    if (productLineIdx < 0 || clientIdx < 0) {
+      // 嘗試用第一欄當客戶
+      return lines.slice(1).map(l => {
+        const cols = parseCsvLine(l);
+        return {name: cols[0] ? cols[0].replace(/^"|"$/g,'').trim() : ''};
+      }).filter(c => c.name);
+    }
+    const clients = [];
+    lines.slice(1).forEach(line => {
+      const cols = parseCsvLine(line);
+      const pl = (cols[productLineIdx]||'').replace(/^"|"$/g,'').trim();
+      const name = (cols[clientIdx]||'').replace(/^"|"$/g,'').trim();
+      if (pl.includes('智联云仓') && name) {
+        clients.push({name});
+      }
+    });
+    return clients;
+  }
+
+  function parseSrmClients(csv) {
+    const lines = csv.split('\n').filter(l => l.trim());
+    if (lines.length < 2) return [];
+    const headers = parseCsvLine(lines[0]).map(h => h.replace(/^"|"$/g,'').trim());
+    const clientIdx = headers.findIndex(h => h.includes('客戶') || h.includes('公司') || h.includes('名稱'));
+    const serviceIdx = headers.findIndex(h => h.includes('服務'));
+    const clients = [];
+    lines.slice(1).forEach(line => {
+      const cols = parseCsvLine(line);
+      const name = (cols[clientIdx >= 0 ? clientIdx : 0]||'').replace(/^"|"$/g,'').trim();
+      const service = serviceIdx >= 0 ? (cols[serviceIdx]||'').replace(/^"|"$/g,'').trim() : '';
+      if (name) clients.push({name, service});
+    });
+    return clients;
+  }
+
+  // ── 產品線切換 ────────────────────────────
+  function selectProductLine(btn) {
+    document.querySelectorAll('[data-group="productLine"]').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    currentProductLine = btn.dataset.value;
+    SELECTED['productLine'] = currentProductLine;
+
+    const clientSel = document.getElementById('client');
+    const srmField = document.getElementById('srmServiceField');
+    clientSel.innerHTML = '<option value="">請選擇客戶</option>';
+
+    if (currentProductLine === '智聯雲倉') {
+      srmField.style.display = 'none';
+      wmsClients.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name; opt.textContent = c.name;
+        clientSel.appendChild(opt);
+      });
+    } else if (currentProductLine === 'SRM') {
+      srmField.style.display = 'block';
+      srmClients.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name; opt.textContent = c.name;
+        opt.dataset.service = c.service || '';
+        clientSel.appendChild(opt);
+      });
+    }
+    document.getElementById('srmService').value = '';
+  }
+
+  function onClientChange() {
+    if (currentProductLine !== 'SRM') return;
+    const sel = document.getElementById('client');
+    const opt = sel.options[sel.selectedIndex];
+    document.getElementById('srmService').value = opt ? (opt.dataset.service || '') : '';
+  }
 
 
   // ── 驗證 ─────────────────────────────────
   function validate() {
+    if (!SELECTED['productLine']) { showToast('請選擇產品線', true); return false; }
     if (!document.getElementById('client').value) { showToast('請選擇客戶名稱', true); return false; }
     if (!document.getElementById('title').value.trim()) { showToast('請填寫問題摘要', true); return false; }
     if (!SELECTED['nature']) { showToast('請選擇問題性質', true); return false; }
@@ -364,7 +498,8 @@
 
     const payload = {
       consultant:  lineProfile ? lineProfile.displayName : '未知',
-
+      productLine: SELECTED['productLine'] || '',
+      srmService:  document.getElementById('srmService') ? document.getElementById('srmService').value : '',
       client:      document.getElementById('client').value,
       title:       document.getElementById('title').value.trim(),
       nature:      SELECTED['nature'] || '',
@@ -439,6 +574,10 @@
     document.getElementById('client').value = '';
     document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
     Object.keys(SELECTED).forEach(k => delete SELECTED[k]);
+    currentProductLine = '';
+    document.getElementById('client').innerHTML = '<option value="">請先選擇產品線</option>';
+    document.getElementById('srmServiceField').style.display = 'none';
+    document.getElementById('srmService').value = '';
     document.getElementById('submitBtn').disabled = false;
     // 重置附件狀態為否
     hasAttachValue = '否';

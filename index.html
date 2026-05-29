@@ -127,16 +127,529 @@
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--primary); color: white; padding: 12px 20px; border-radius: 100px; font-size: 13px; font-weight: 500; transition: transform 0.3s ease; z-index: 300; white-space: nowrap; }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.error { background: #CC2200; }
+
   /* 產品線大卡片 */
+  .pl-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 12px;
+    border-radius: 16px;
+    border: 2px solid var(--border);
+    background: white;
+    gap: 8px;
+    cursor: pointer;
+    transition: all .2s;
+    width: 100%;
+  }
+  .pl-icon { font-size: 44px; line-height: 1; }
+  .pl-label { font-size: 15px; font-weight: 700; color: var(--text); }
   .pl-card.selected {
-    border-color: var(--primary) !important;
-    background: #f0faf4 !important;
-    box-shadow: 0 0 0 3px rgba(34,139,70,.15);
+    border-color: #1A7A4A;
+    background: #E8F5EE;
+    box-shadow: 0 0 0 3px rgba(26,122,74,.15);
   }
-  .pl-card.selected span:last-child {
-    color: var(--primary) !important;
-  }
-  .pl-card:active {
-    transform: scale(.97);
-  }
+  .pl-card.selected .pl-label { color: #1A7A4A; }
+  .pl-card:active { transform: scale(.97); }
 </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">智物流交付部</span>
+    <div id="headerUser" style="display:none;">
+      <div class="user-info">
+        <img class="user-avatar" id="headerAvatar" src="" alt="">
+        <span class="user-name" id="headerName"></span>
+      </div>
+    </div>
+    <div class="status-dot" id="statusDot" style="display:none;"></div>
+  </div>
+  <h1>雲倉/SRM<span>｜</span>現場回報</h1>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">初始化中...</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- 初始化畫面 -->
+<div class="init-screen" id="initScreen">
+  <div class="init-icon">⏳</div>
+  <p>載入中，請稍候...</p>
+</div>
+
+<!-- 主畫面 -->
+<div class="main" id="mainArea" style="display:none;">
+
+  <!-- 成功畫面 -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✓</div>
+    <h2>回報成功！</h2>
+    <p id="successMsg">問題已記錄至系統，通知已發送至群組</p>
+    <div id="attachGuideBtn" style="display:none;margin-bottom:16px;">
+      <a id="attachGroupLink" href="#" style="display:block;width:100%;background:#06C755;color:white;text-decoration:none;border-radius:14px;padding:16px 24px;font-size:15px;font-weight:700;margin-bottom:12px;text-align:center;box-sizing:border-box;">
+        📸 前往群組上傳附件
+      </a>
+      <div style="background:white;border-radius:var(--radius);border:1px solid var(--border);padding:16px;text-align:center;">
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:10px;">📱 或掃描 QR Code 進入群組</div>
+        <img id="attachGroupQR" src="" alt="群組QR Code" style="width:180px;height:180px;object-fit:contain;border-radius:8px;">
+        <div id="attachGroupName" style="font-size:11px;color:var(--text-sub);margin-top:8px;"></div>
+      </div>
+    </div>
+    <button class="reset-btn" onclick="resetForm()">繼續回報下一個問題</button>
+  </div>
+
+  <!-- 表單 -->
+  <div id="formArea">
+
+    <!-- ① 顧問資訊（LINE 自動帶入） -->
+    <div class="card">
+      <div class="card-title">顧問資訊</div>
+
+      <!-- LINE 使用者自動帶入 -->
+      <div class="line-user-card" id="lineUserCard">
+        <img id="lineAvatar" src="" alt="">
+        <div>
+          <div class="line-name" id="lineDisplayName">載入中...</div>
+          <div class="line-sub">LINE 帳號自動識別</div>
+        </div>
+      </div>
+
+      <!-- 產品線選擇 -->
+      <div class="field">
+        <label class="required">產品線</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+          <button class="tag-btn pl-card" data-group="productLine" data-value="智聯雲倉" onclick="selectProductLine(this)">
+            <span class="pl-icon">🚚</span>
+            <span class="pl-label">智聯雲倉</span>
+          </button>
+          <button class="tag-btn pl-card" data-group="productLine" data-value="SRM" onclick="selectProductLine(this)">
+            <span class="pl-icon">🏢</span>
+            <span class="pl-label">SRM</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 客戶名稱 + SRM服務 -->
+      <div style="display:flex; gap:8px; align-items:flex-start;">
+        <div class="field" style="flex:1; margin-bottom:0;">
+          <label class="required">客戶名稱</label>
+          <select id="client" onchange="onClientChange()">
+            <option value="">請先選擇產品線</option>
+          </select>
+        </div>
+        <div class="field" id="srmServiceField" style="flex:1; margin-bottom:0; display:none;">
+          <label>服務</label>
+          <input type="text" id="srmService" placeholder="自動帶入" readonly style="background:#f0f0f0; color:var(--text-sub);">
+        </div>
+      </div>
+    </div>
+
+    <!-- ② 問題描述 -->
+    <div class="card">
+      <div class="card-title">問題描述</div>
+      <div class="field">
+        <label class="required">問題摘要</label>
+        <input type="text" id="title" placeholder="一句話描述問題，例如：掃碼收貨無法提交">
+      </div>
+      <div class="field">
+        <label class="required">問題性質</label>
+        <div class="tag-grid tag-grid-4">
+          <button class="tag-btn" data-group="nature" data-value="系統BUG" onclick="selectTag(this)"><span class="tag-icon">🐛</span>系統 BUG</button>
+          <button class="tag-btn" data-group="nature" data-value="操作錯誤" onclick="selectTag(this)"><span class="tag-icon">👆</span>操作錯誤</button>
+          <button class="tag-btn" data-group="nature" data-value="功能缺口" onclick="selectTag(this)"><span class="tag-icon">🔧</span>功能缺口</button>
+          <button class="tag-btn" data-group="nature" data-value="環境設定" onclick="selectTag(this)"><span class="tag-icon">⚙️</span>環境設定</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>問題模組</label>
+        <select id="module">
+          <option value="">請選擇模組（可不填）</option>
+          <option value="收貨">收貨</option>
+          <option value="上架">上架</option>
+          <option value="下架">下架</option>
+          <option value="揀貨">揀貨</option>
+          <option value="標籤列印">標籤列印</option>
+          <option value="基礎設定">基礎設定</option>
+          <option value="庫存管理">庫存管理</option>
+          <option value="報表">報表</option>
+          <option value="ERP串接">ERP串接</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>現場詳細描述</label>
+        <textarea id="description" rows="4" placeholder="詳細說明問題發生的步驟與情境..."></textarea>
+      </div>
+    </div>
+
+    <!-- ③ 緊急度 -->
+    <div class="card">
+      <div class="card-title">緊急程度</div>
+      <div class="tag-grid tag-grid-2">
+        <button class="tag-btn urgent" data-group="urgent" data-value="緊急(影響正常作業)" onclick="selectTag(this)">
+          <span class="tag-icon">🚨</span>緊急<br><small style="font-weight:400;font-size:11px">影響正常作業</small>
+        </button>
+        <button class="tag-btn normal" data-group="urgent" data-value="普通(不影響作業)" onclick="selectTag(this)">
+          <span class="tag-icon">📋</span>普通<br><small style="font-weight:400;font-size:11px">不影響作業</small>
+        </button>
+      </div>
+    </div>
+
+
+
+    <!-- ④ 是否有附件 -->
+    <div class="card">
+      <div class="card-title">是否有附件</div>
+      <div class="tag-grid tag-grid-2">
+        <button class="tag-btn normal selected" data-group="attach" data-value="否" onclick="selectAttach(this)">
+          <span class="tag-icon">📋</span>否<br><small style="font-weight:400;font-size:11px">無截圖或錄影</small>
+        </button>
+        <button class="tag-btn" data-group="attach" data-value="是" onclick="selectAttach(this)">
+          <span class="tag-icon">📸</span>是<br><small style="font-weight:400;font-size:11px">有截圖或錄影</small>
+        </button>
+      </div>
+    </div>
+
+    <div class="flow-badge">
+      <span>🔄</span>
+      <span>送出後資料自動寫入系統，通知已發送至群組</span>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="submitReport()">
+      <span>📤</span> 送出問題回報
+    </button>
+  </div>
+</div>
+
+<!-- LIFF SDK -->
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+  const LIFF_ID         = '2010128014-rLRvQtc6';
+  const APPS_SCRIPT_URL     = 'https://script.google.com/macros/s/AKfycbxgEtAj7ifD32k9sjY23TuebgQj0WjoF4kUGQJB_WVLgSAcOsOSzay4rKgAWBQsdMyNow/exec'; // 雲倉
+  const SRM_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxu0-3sBTZOcLGTSq9couaPFnDHDtXSHAlpstVzvFIL58p5pyzABXP_rNRuP_ZE-H9i/exec'; // SRM
+  const DRIVE_FOLDER_ID = '1Gw4vEWvaLLf4kJ5D7zx2yZGQMd7thAa-8I-JebnRDJmSz7Oqq727PQjsfpUE59OYNRSm4h9m';
+
+  // Google Sheets 公開同步表（知道連結可檢視）
+  const SHEET_ID      = '1RbMGEGJYEPtn3-4O1HK6Cpr2WkhV8Vo7btrlQhVzeao';
+  const WMS_SHEET_GID = '0';            // 雲倉客戶頁籤
+  const SRM_SHEET_GID = '2098434751';   // SRM客戶頁籤
+
+  const SELECTED = {};
+  let selectedFiles = [];
+  let lineProfile   = null;
+  let driveToken    = null;
+  let wmsClients    = []; // [{name}]
+  let srmClients    = []; // [{name, service}]
+  let currentProductLine = ''; // 'SRM' or '智聯雲倉'
+
+  // ── LIFF 初始化 ──────────────────────────
+  async function initLiff() {
+    try {
+      await liff.init({ liffId: LIFF_ID });
+
+      if (!liff.isLoggedIn()) {
+        liff.login({ redirectUri: location.href });
+        return;
+      }
+
+      lineProfile = await liff.getProfile();
+      // 只取 displayName 和 pictureUrl，不用 userId
+      lineProfile = {
+        displayName: lineProfile.displayName || '未知顧問',
+        pictureUrl:  lineProfile.pictureUrl  || '',
+      };
+
+      // Header 顯示
+      document.getElementById('headerAvatar').src = lineProfile.pictureUrl;
+      document.getElementById('headerName').textContent = lineProfile.displayName;
+      document.getElementById('headerUser').style.display = 'block';
+      document.getElementById('statusDot').style.display = 'block';
+
+      // 表單顯示
+      document.getElementById('lineAvatar').src = lineProfile.pictureUrl;
+      document.getElementById('lineDisplayName').textContent = lineProfile.displayName;
+
+      document.getElementById('initScreen').style.display = 'none';
+      document.getElementById('mainArea').style.display = 'block';
+      loadClients();
+
+    } catch(err) {
+      console.error('LIFF init error:', err);
+      // 非 LINE 環境（電腦測試用）
+      lineProfile = { displayName: '測試顧問', pictureUrl: '' };
+      document.getElementById('lineDisplayName').textContent = '測試顧問（非 LINE 環境）';
+      document.getElementById('initScreen').style.display = 'none';
+      document.getElementById('mainArea').style.display = 'block';
+      loadClients();
+    }
+  }
+
+  // ── 附件處理 ─────────────────────────────
+
+  // ── 取得 Drive Token（透過 Apps Script 代理上傳）──
+
+  // ── 客戶資料從 Google Sheets 載入 ────────────
+  async function loadClients() {
+    try {
+      // 讀取雲倉客戶（物流-專案進度表）
+      const wmsUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${WMS_SHEET_GID}`;
+      const wmsRes = await fetch(wmsUrl);
+      const wmsCsv = await wmsRes.text();
+      wmsClients = parseWmsClients(wmsCsv);
+
+      // 讀取SRM客戶（SRM-專案進度表）
+      const srmUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SRM_SHEET_GID}`;
+      const srmRes = await fetch(srmUrl);
+      const srmCsv = await srmRes.text();
+      srmClients = parseSrmClients(srmCsv);
+    } catch(err) {
+      console.error('載入客戶資料失敗:', err);
+      // fallback: 舊有靜態資料
+      wmsClients = [{name:'永勝'},{name:'泰碩'},{name:'東元'}];
+      srmClients = [];
+    }
+  }
+
+  function parseCsvLine(line) {
+    const result = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    result.push(cur.trim());
+    return result;
+  }
+
+  function parseWmsClients(csv) {
+    // 公開表格式：第1行=標題(客戶名稱)，第2行起=資料
+    const lines = csv.split('\n').filter(l => l.trim());
+    if (lines.length < 2) return [];
+    return lines.slice(1).map(l => {
+      const cols = parseCsvLine(l);
+      const name = (cols[0] || '').replace(/^"|"$/g, '').trim();
+      return { name };
+    }).filter(r => r.name);
+  }
+
+  function parseSrmClients(csv) {
+    // 公開表格式：第1行=標題(客戶名稱,服務)，第2行起=資料
+    const lines = csv.split('\n').filter(l => l.trim());
+    if (lines.length < 2) return [];
+    return lines.slice(1).map(l => {
+      const cols = parseCsvLine(l);
+      const name    = (cols[0] || '').replace(/^"|"$/g, '').trim();
+      const service = (cols[1] || '').replace(/^"|"$/g, '').trim();
+      return { name, service };
+    }).filter(r => r.name);
+  }
+
+
+  // ── 產品線切換 ────────────────────────────
+  function selectProductLine(btn) {
+    document.querySelectorAll('[data-group="productLine"]').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    currentProductLine = btn.dataset.value;
+    SELECTED['productLine'] = currentProductLine;
+
+    const clientSel = document.getElementById('client');
+    const srmField = document.getElementById('srmServiceField');
+    clientSel.innerHTML = '<option value="">請選擇客戶</option>';
+
+    if (currentProductLine === '智聯雲倉') {
+      srmField.style.display = 'none';
+      wmsClients.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name; opt.textContent = c.name;
+        clientSel.appendChild(opt);
+      });
+    } else if (currentProductLine === 'SRM') {
+      srmField.style.display = 'block';
+      srmClients.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name; opt.textContent = c.name;
+        opt.dataset.service = c.service || '';
+        clientSel.appendChild(opt);
+      });
+    }
+    document.getElementById('srmService').value = '';
+  }
+
+  function onClientChange() {
+    if (currentProductLine !== 'SRM') return;
+    const sel = document.getElementById('client');
+    const opt = sel.options[sel.selectedIndex];
+    document.getElementById('srmService').value = opt ? (opt.dataset.service || '') : '';
+  }
+
+
+  // ── 驗證 ─────────────────────────────────
+  function validate() {
+    if (!SELECTED['productLine']) { showToast('請選擇產品線', true); return false; }
+    if (!document.getElementById('client').value) { showToast('請選擇客戶名稱', true); return false; }
+    if (!document.getElementById('title').value.trim()) { showToast('請填寫問題摘要', true); return false; }
+    if (!SELECTED['nature']) { showToast('請選擇問題性質', true); return false; }
+    if (!SELECTED['urgent']) { showToast('請選擇緊急程度', true); return false; }
+    return true;
+  }
+
+  // ── 送出 ─────────────────────────────────
+  async function submitReport() {
+    if (!validate()) return;
+    showLoading(true, '回報中...');
+
+    const payload = {
+      consultant:  lineProfile ? lineProfile.displayName : '未知',
+      productLine: SELECTED['productLine'] || '',
+      srmService:  document.getElementById('srmService') ? document.getElementById('srmService').value : '',
+      client:      document.getElementById('client').value,
+      title:       document.getElementById('title').value.trim(),
+      nature:      SELECTED['nature'] || '',
+      module:      document.getElementById('module').value || '',
+      description: document.getElementById('description').value.trim(),
+      urgent:      SELECTED['urgent'] || '',
+      hasAttach:   hasAttachValue,
+      fileNames:   '',
+      fileLinks:   '',
+    };
+
+    // 送出前先把產品線與服務存起來（避免之後 DOM 讀不到）
+    const submittedProductLine = SELECTED['productLine'] || '';
+    const submittedService     = (document.getElementById('srmService') ? document.getElementById('srmService').value : '').trim();
+
+    // 依產品線選擇對應的 GAS 網址
+    const targetUrl = (submittedProductLine === 'SRM')
+      ? SRM_APPS_SCRIPT_URL
+      : APPS_SCRIPT_URL;
+
+    try {
+      await fetch(targetUrl, {
+        method:  'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body:    JSON.stringify(payload),
+      });
+      showLoading(false);
+      document.getElementById('successMsg').textContent = '問題已記錄至系統，通知已發送至群組';
+
+      // 依產品線 + SRM服務 決定附件群組連結
+      const attachBtn = document.getElementById('attachGuideBtn');
+      if (attachBtn && hasAttachValue === '是') {
+        const pl      = submittedProductLine;
+        const service = submittedService;
+
+        // 群組設定
+        const GROUP_WMS = { url: 'https://line.me/R/ti/g/MFsJNFwznp', qr: 'https://nina-ren-system.github.io/wms-report/group-qr.jpg', name: 'WMS 智聯雲倉群組' };
+        const GROUP_黃  = { url: 'https://line.me/R/ti/g/znKHY2fyTJ', qr: 'srm-qr-huang.png', name: 'SRM 黃愛媜群組' };
+        const GROUP_王  = { url: 'https://line.me/R/ti/g/ZZxq3bAJpL',            qr: 'srm-qr-wang.png', name: 'SRM 王文杰群組' };
+
+        let group = GROUP_WMS; // 預設雲倉
+        if (pl === 'SRM') {
+          if (service === '王文杰')      group = GROUP_王;
+          else if (service === '黃愛媜') group = GROUP_黃;
+          else                           group = GROUP_黃; // SRM 預設黃愛媜
+        }
+
+        document.getElementById('attachGroupLink').href = group.url;
+        document.getElementById('attachGroupQR').src    = group.qr;
+        document.getElementById('attachGroupName').textContent = group.name;
+        attachBtn.style.display = 'block';
+      } else if (attachBtn) {
+        attachBtn.style.display = 'none';
+      }
+
+      showSuccess();
+    } catch(err) {
+      showLoading(false);
+      showToast('寫入失敗，請重試', true);
+    }
+  }
+
+  // ── Tag ──────────────────────────────────
+  // ── 客戶選單（自訂彈出，不用 select）─────────
+
+
+  // 用 touchstart + click 雙重綁定，確保所有裝置都能觸發
+
+
+
+
+
+
+  function selectTag(btn) {
+    const group = btn.dataset.group;
+    document.querySelectorAll('[data-group="' + group + '"]').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    SELECTED[group] = btn.dataset.value;
+  }
+
+  let hasAttachValue = '否'; // 預設為否
+
+  function selectAttach(btn) {
+    document.querySelectorAll('[data-group="attach"]').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    hasAttachValue = btn.dataset.value;
+  }
+
+  // ── UI ───────────────────────────────────
+  function showLoading(show, text) {
+    document.getElementById('loadingOverlay').classList.toggle('show', show);
+    document.getElementById('submitBtn').disabled = show;
+    if (text) document.getElementById('loadingText').textContent = text;
+  }
+  function setLoadingText(t) { document.getElementById('loadingText').textContent = t; }
+  function showSuccess() {
+    document.getElementById('formArea').style.display = 'none';
+    document.getElementById('successScreen').classList.add('show');
+    window.scrollTo(0, 0);
+  }
+  function resetForm() {
+    document.getElementById('successScreen').classList.remove('show');
+    document.getElementById('formArea').style.display = 'block';
+    ['title','module','description'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('client').value = '';
+    document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
+    Object.keys(SELECTED).forEach(k => delete SELECTED[k]);
+    currentProductLine = '';
+    document.getElementById('client').innerHTML = '<option value="">請先選擇產品線</option>';
+    document.getElementById('srmServiceField').style.display = 'none';
+    document.getElementById('srmService').value = '';
+    document.getElementById('submitBtn').disabled = false;
+    // 重置附件狀態為否
+    hasAttachValue = '否';
+    document.querySelectorAll('[data-group="attach"]').forEach(b => b.classList.remove('selected'));
+    document.querySelector('[data-group="attach"][data-value="否"]').classList.add('selected');
+    window.scrollTo(0, 0);
+  }
+  function closeAndGoGroup() {
+    try {
+      if (liff.isInClient()) {
+        liff.closeWindow();
+      } else {
+        showToast('請回到 LINE 群組傳送附件', false);
+      }
+    } catch(err) {
+      // 若 closeWindow 失敗，顯示提示
+      showToast('請手動關閉此頁面，回到群組傳送附件', false);
+    }
+  }
+
+  function showToast(msg, isError) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+
+  // 啟動
+  initLiff();
+</script>
+</body>
+</html>

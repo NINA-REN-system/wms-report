@@ -303,7 +303,8 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
   const LIFF_ID         = '2010128014-rLRvQtc6';
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxgEtAj7ifD32k9sjY23TuebgQj0WjoF4kUGQJB_WVLgSAcOsOSzay4rKgAWBQsdMyNow/exec';
+  const APPS_SCRIPT_URL     = 'https://script.google.com/macros/s/AKfycbxgEtAj7ifD32k9sjY23TuebgQj0WjoF4kUGQJB_WVLgSAcOsOSzay4rKgAWBQsdMyNow/exec'; // 雲倉
+  const SRM_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxu0-3sBTZOcLGTSq9couaPFnDHDtXSHAlpstVzvFIL58p5pyzABXP_rNRuP_ZE-H9i/exec'; // SRM
   const DRIVE_FOLDER_ID = '1Gw4vEWvaLLf4kJ5D7zx2yZGQMd7thAa-8I-JebnRDJmSz7Oqq727PQjsfpUE59OYNRSm4h9m';
 
   // Google Sheets 公開同步表（知道連結可檢視）
@@ -492,15 +493,19 @@
       fileLinks:   '',
     };
 
+    // 依產品線選擇對應的 GAS 網址
+    const targetUrl = (SELECTED['productLine'] === 'SRM')
+      ? SRM_APPS_SCRIPT_URL
+      : APPS_SCRIPT_URL;
+
     try {
-      await fetch(APPS_SCRIPT_URL, {
+      await fetch(targetUrl, {
         method:  'POST',
         headers: { 'Content-Type': 'text/plain' },
         body:    JSON.stringify(payload),
       });
       showLoading(false);
       document.getElementById('successMsg').textContent = '問題已記錄至系統，通知已發送至群組';
-      // 依附件狀態決定按鈕顯示
       const attachBtn = document.getElementById('attachGuideBtn');
       if (attachBtn) attachBtn.style.display = hasAttachValue === '是' ? 'block' : 'none';
       showSuccess();

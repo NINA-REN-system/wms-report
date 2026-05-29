@@ -493,8 +493,12 @@
       fileLinks:   '',
     };
 
+    // 送出前先把產品線與服務存起來（避免之後 DOM 讀不到）
+    const submittedProductLine = SELECTED['productLine'] || '';
+    const submittedService     = (document.getElementById('srmService') ? document.getElementById('srmService').value : '').trim();
+
     // 依產品線選擇對應的 GAS 網址
-    const targetUrl = (SELECTED['productLine'] === 'SRM')
+    const targetUrl = (submittedProductLine === 'SRM')
       ? SRM_APPS_SCRIPT_URL
       : APPS_SCRIPT_URL;
 
@@ -510,8 +514,8 @@
       // 依產品線 + SRM服務 決定附件群組連結
       const attachBtn = document.getElementById('attachGuideBtn');
       if (attachBtn && hasAttachValue === '是') {
-        const pl      = SELECTED['productLine'] || '';
-        const service = (document.getElementById('srmService') ? document.getElementById('srmService').value : '').trim();
+        const pl      = submittedProductLine;
+        const service = submittedService;
 
         // 群組設定
         const GROUP_WMS = { url: 'https://line.me/R/ti/g/MFsJNFwznp', qr: 'https://nina-ren-system.github.io/wms-report/group-qr.jpg', name: 'WMS 智聯雲倉群組' };

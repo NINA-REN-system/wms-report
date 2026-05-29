@@ -306,12 +306,10 @@
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxgEtAj7ifD32k9sjY23TuebgQj0WjoF4kUGQJB_WVLgSAcOsOSzay4rKgAWBQsdMyNow/exec';
   const DRIVE_FOLDER_ID = '1Gw4vEWvaLLf4kJ5D7zx2yZGQMd7thAa-8I-JebnRDJmSz7Oqq727PQjsfpUE59OYNRSm4h9m';
 
-  // Google Sheets 客戶資料
-  const SHEET_ID = '1gNCYumiQ-wcY8w6b-TBOU5XBFyp9OYx95cSkJDYNIZc';
-  // 雲倉：物流-專案進度表 gid=1610781877
-  // SRM：請到試算表點 SRM-專案進度表，網址列取 gid= 後的數字填入
-  const WMS_SHEET_GID = '1946583136';
-  const SRM_SHEET_GID = '1610781877'; // ← 請修改為 SRM-專案進度表的實際 gid
+  // Google Sheets 公開同步表（知道連結可檢視）
+  const SHEET_ID      = '1RbMGEGJYEPtn3-4O1HK6Cpr2WkhV8Vo7btrlQhVzeao';
+  const WMS_SHEET_GID = '0';            // 雲倉客戶頁籤
+  const SRM_SHEET_GID = '2098434751';   // SRM客戶頁籤
 
   const SELECTED = {};
   let selectedFiles = [];
@@ -403,45 +401,28 @@
   }
 
   function parseWmsClients(csv) {
+    // 公開表格式：第1行=標題(客戶名稱)，第2行起=資料
     const lines = csv.split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
-    const headers = parseCsvLine(lines[0]).map(h => h.replace(/^"|"$/g,'').trim());
-    const productLineIdx = headers.findIndex(h => h.includes('產品線'));
-    const clientIdx = headers.findIndex(h => h.includes('客戶') || h.includes('公司') || h.includes('名稱'));
-    if (productLineIdx < 0 || clientIdx < 0) {
-      // 嘗試用第一欄當客戶
-      return lines.slice(1).map(l => {
-        const cols = parseCsvLine(l);
-        return {name: cols[0] ? cols[0].replace(/^"|"$/g,'').trim() : ''};
-      }).filter(c => c.name);
-    }
-    const clients = [];
-    lines.slice(1).forEach(line => {
-      const cols = parseCsvLine(line);
-      const pl = (cols[productLineIdx]||'').replace(/^"|"$/g,'').trim();
-      const name = (cols[clientIdx]||'').replace(/^"|"$/g,'').trim();
-      if (pl.includes('智联云仓') && name) {
-        clients.push({name});
-      }
-    });
-    return clients;
+    return lines.slice(1).map(l => {
+      const cols = parseCsvLine(l);
+      const name = (cols[0] || '').replace(/^"|"$/g, '').trim();
+      return { name };
+    }).filter(r => r.name);
   }
 
   function parseSrmClients(csv) {
+    // 公開表格式：第1行=標題(客戶名稱,服務)，第2行起=資料
     const lines = csv.split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
-    const headers = parseCsvLine(lines[0]).map(h => h.replace(/^"|"$/g,'').trim());
-    const clientIdx = headers.findIndex(h => h.includes('客戶') || h.includes('公司') || h.includes('名稱'));
-    const serviceIdx = headers.findIndex(h => h.includes('服務'));
-    const clients = [];
-    lines.slice(1).forEach(line => {
-      const cols = parseCsvLine(line);
-      const name = (cols[clientIdx >= 0 ? clientIdx : 0]||'').replace(/^"|"$/g,'').trim();
-      const service = serviceIdx >= 0 ? (cols[serviceIdx]||'').replace(/^"|"$/g,'').trim() : '';
-      if (name) clients.push({name, service});
-    });
-    return clients;
+    return lines.slice(1).map(l => {
+      const cols = parseCsvLine(l);
+      const name    = (cols[0] || '').replace(/^"|"$/g, '').trim();
+      const service = (cols[1] || '').replace(/^"|"$/g, '').trim();
+      return { name, service };
+    }).filter(r => r.name);
   }
+
 
   // ── 產品線切換 ────────────────────────────
   function selectProductLine(btn) {
